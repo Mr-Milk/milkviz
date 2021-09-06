@@ -5,15 +5,10 @@ import matplotlib.axes
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from matplotlib import cm
-from matplotlib.collections import PatchCollection
-from matplotlib.colors import Colormap
-from matplotlib.lines import Line2D
-
+from matplotlib.collections import PatchCollection, LineCollection
 from natsort import natsorted
 
-from milkviz.utils import adaptive_figsize, doc, norm_arr, set_cbar, set_size_legend, set_ticks, set_spines, \
+from milkviz.utils import set_cbar, set_ticks, set_spines, \
     color_mapper_cat, rotate_points, set_category_legend, color_mapper_val
 
 
@@ -22,10 +17,13 @@ def point_map(
         y: Union[List[float], np.ndarray],
         types: Union[List[str], np.ndarray, None] = None,
         values: Union[List[float], np.ndarray, None] = None,
+        links: Union[List[Tuple[int, int]], np.ndarray, None] = None,
         color: Union[str, List[str], None] = None,
         legend_title: Optional[str] = None,
         rotate: Optional[int] = None,
         markersize: Optional[int] = 5,
+        linecolor: Union[str, List[str]] = "#cccccc",
+        linewidth: int = 1,
         no_spines: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
 ):
@@ -39,6 +37,14 @@ def point_map(
     ax.set_yticklabels([])
     if rotate is not None:
         x, y = rotate_points(x, y, (0, 0), rotate)
+
+    if links is not None:
+        if not isinstance(linecolor, str):
+            if len(linecolor) != len(links):
+                raise ValueError("Length of linecolor must match to links")
+        lines = [[(x[i1], y[i1]), (x[i2], y[i2])] for i1, i2 in links]
+        line_collections = LineCollection(lines, linewidths=linewidth, edgecolors=linecolor, zorder=-100)
+        ax.add_collection(line_collections)
 
     if types is not None:
         color = "tab20" if color is None else color

@@ -69,8 +69,8 @@ def dot(
         if isinstance(dot_hue, str):
             circ_colors = np.repeat(dot_hue, dot_size.size)
         else:
-            if np.sum(dot_hue.shape == dot_size.shape) == dot_size.size:
-                circ_colors = dot_hue
+            if np.array((dot_hue.shape == dot_size.shape)).all():
+                circ_colors = dot_hue.flatten()
             else:
                 raise ValueError("dot_hue does not match the shape of dot_size")
     else:
@@ -80,4 +80,5 @@ def dot(
     _ = plt.scatter(xcoord, ycoord, s=circ_size, c=circ_colors)
     # adding dot size legend
     set_size_legend(ax, dot_size, circ_size, (1.05, 0, 1, 1), legend_title)
+    ax.grid(False)
     return ax

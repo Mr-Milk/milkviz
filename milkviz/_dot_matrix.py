@@ -8,8 +8,8 @@ import numpy as np
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import Colormap
 
-from milkviz.utils import adaptive_figsize, doc, norm_arr, set_cbar, set_size_legend, set_ticks, set_spines
 from milkviz._dot import set_dot_grid
+from milkviz.utils import doc, norm_arr, set_cbar, set_size_legend
 
 
 @doc
@@ -59,6 +59,6 @@ def dot_heatmap(
         ax.add_collection(rects)
 
         set_cbar(ax, rects, (1.27, 0, 0.1, 0.3), matrix_cbar_title, rects_cmin, rects_cmax, matrix_cbar_ticklabels)
-
+    plt.tight_layout()
     return ax
 

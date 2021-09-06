@@ -2,23 +2,44 @@ from itertools import cycle
 from typing import Union, List, Any
 
 import matplotlib as mpl
-from matplotlib import colors as mcolors
-from matplotlib import cm
 import numpy as np
+from matplotlib import cm
+from matplotlib import colors as mcolors
+from matplotlib.colors import to_hex
 from matplotlib.lines import Line2D
 
 
-def norm_arr(arr, size=(1, 100)):
+def mask_triu(arr, k=1):
+    if not isinstance(arr, np.ndarray):
+        arr = np.array(arr, dtype=np.float64)
+    arr = arr.astype(np.float64)
+    shape = arr.shape
+    if shape[0]!=shape[1]:
+        raise ValueError("Must be a square")
+    iu = np.triu_indices(shape[0], k=k)
+    arr[iu] = np.nan
+    return np.fliplr(arr.T)
+
+
+def norm_arr(arr, size=(1, 100), vmin=None, vmax=None):
     """Normalize the array to a specific range"""
     if not isinstance(arr, np.ndarray):
         arr = np.array(arr)
     arr = arr.flatten()
+    add_count = 0
+    if vmin is not None:
+        arr = np.array([*arr, vmin])
+        add_count += 1
+    if vmax is not None:
+        arr = np.array([*arr, vmax])
+        add_count += 1
     amin = np.nanmin(arr)
     amax = np.nanmax(arr)
     size_range = size[1] - size[0]
     arr = (arr - amin) * (size_range / (amax - amin))
     arr += size[0]
-    return arr
+    slice_ = -add_count if add_count > 0 else None
+    return arr[:slice_]
 
 
 def adaptive_figsize(size, min_side=5):
@@ -33,10 +54,13 @@ def adaptive_figsize(size, min_side=5):
     return tuple(size)
 
 
-def set_cbar(ax, patches, bbox, title, cmin, cmax, ticklabels=None):
+def set_cbar(ax, patches=None, bbox=None, title=None, cmin=None, cmax=None, ticklabels=None, cmap=None):
     axins = ax.inset_axes(bbox, transform=ax.transAxes)
     fig = ax.get_figure()
-    cbar = fig.colorbar(patches, cax=axins)
+    if patches is not None:
+        cbar = fig.colorbar(patches, cax=axins)
+    else:
+        cbar = fig.colorbar(cm.ScalarMappable(cmap=cmap), cax=axins)
     cbar.ax.set_title(title, size=mpl.rcParams["font.size"])
     cbar.ax.yaxis.set_tick_params(length=0)  # hide ticks
     if ticklabels is not None:
@@ -59,9 +83,10 @@ def set_size_legend(ax, size_arr, markersize_arr, bbox, title):
 def set_category_legend(ax, cmapper, bbox, title, marker="o"):
     legend_items = [Line2D((), (), marker=marker, linestyle="none", markersize=5, color=c, markerfacecolor=c, label=t)
                     for t, c in cmapper.items()]
-
+    ncol = round(len(legend_items) / 10)
+    ncol = ncol if ncol > 0 else 1
     legend = ax.legend(handles=legend_items, loc="upper left", bbox_to_anchor=bbox,
-                       frameon=False, title=title, ncol=round(len(legend_items) / 10),
+                       frameon=False, title=title, ncol=ncol,
                        fontsize=mpl.rcParams["font.size"])
     ax.add_artist(legend)
 
@@ -85,7 +110,7 @@ def color_mapper_cat(color: Union[str, List[str]], types: Union[List[Any], np.nd
     for c in cycle(color):
         if len(all_colors) < N:
             cmap = cm.get_cmap(c)
-            all_colors += [cmap(i) for i in range(cmap.N)]
+            all_colors += [to_hex(cmap(i), keep_alpha=True) for i in range(cmap.N)]
         else:
             break
 
@@ -99,4 +124,4 @@ def color_mapper_val(color: str, values: Union[List[Any], np.ndarray]):
     vmax = np.nanmax(values)
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
     mapper = cm.ScalarMappable(norm=norm, cmap=color)
-    return [mapper.to_rgba(v) for v in values]
+    return [to_hex(mapper.to_rgba(v), keep_alpha=True) for v in values]

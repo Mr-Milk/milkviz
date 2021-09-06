@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.colors import Colormap
 
-from milkviz.utils import adaptive_figsize, norm_arr
-from milkviz.utils.fig import set_size_legend, set_spines, set_ticks, set_cbar
+from milkviz.utils import norm_arr
+from milkviz.utils.fig import set_size_legend, set_cbar
 
 
 def bubble(data: Optional[pd.DataFrame] = None,
