@@ -36,3 +36,7 @@ cover/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# Sphinx documentation
+docs/_build/
+docs/auto_examples
