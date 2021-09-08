@@ -22,5 +22,5 @@ setup(name="milkviz",
           "Topic :: Scientific/Engineering :: Bio-Informatics",
       ],
       python_requires='>=3.7',
-      install_requires=['numpy', 'pandas', 'scipy', 'seaborn', 'matplotlib'],
+      install_requires=['numpy', 'pandas', 'matplotlib', 'seaborn', 'networkx', 'natsort'],
       )
