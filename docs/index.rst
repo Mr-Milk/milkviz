@@ -6,11 +6,14 @@
 Welcome to milkviz's documentation!
 ===================================
 
+Milkviz is a self-opinionated visualization library for Python.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   auto_examples/index
+   gallery_examples/index
+   api
 
 
 

@@ -15,7 +15,7 @@ if "%1" == "" goto help
 if "%1" == "clean" (
 	for /d %%i in (%BUILDDIR%\*) do rmdir /q /s %%i
 	del /q /s %BUILDDIR%\*
-	rmdir /q /s auto_examples
+	rmdir /q /s gallery_examples
 	goto end
 )
 

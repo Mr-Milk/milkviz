@@ -6,6 +6,8 @@ Here shows how to draw annotated heatmap
 
 """
 import numpy as np
+import pandas as pd
+
 import milkviz as mv
 
 # %%
@@ -15,6 +17,8 @@ import milkviz as mv
 import seaborn as sns
 p = sns.load_dataset("penguins").dropna()
 df = p.set_index(["species", "island", "sex"])
+data = np.random.randn(*df.to_numpy().shape)
+df = pd.DataFrame(data=data, columns=df.columns, index=df.index)
 df.columns.name = "col"
 df
 

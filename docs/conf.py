@@ -42,13 +42,18 @@ release = '0.1.0'
 # ones.
 extensions = [
     'sphinx_gallery.gen_gallery',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary'
 ]
 
 sphinx_gallery_conf = {
     'examples_dirs': '../examples',  # path to your example scripts
-    'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
+    'gallery_dirs': 'gallery_examples',  # path to where to save gallery generated output
     'image_scrapers': (matplotlib_svg_scraper(),),
 }
+
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
