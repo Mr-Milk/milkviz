@@ -1,15 +1,16 @@
 from typing import List, Any, Tuple, Optional, Union
 
 import matplotlib as mpl
+import networkx as nx
 import numpy as np
 from matplotlib import cm
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-import networkx as nx
 
-from milkviz.utils import norm_arr, set_spines, set_cbar
+from milkviz.utils import norm_arr, set_spines, set_cbar, doc
 
 
+@doc
 def graph(
         edges: List[Tuple[Any, Any]],
         nodes_size: Optional[List[float]] = None,
@@ -29,9 +30,42 @@ def graph(
         linewidth: Tuple[float, float] = (1, 10),
         connectionstyle: str = 'arc3,rad=0.2',
         layout: str = "kamada_kawai_layout",
-        directed: bool = False,
+        arrowstyle: str = "-",
         ax: Optional[Axes] = None,
 ) -> Axes:
+    """Graph layout
+
+    Args:
+        edges: The graph data, a list of (source, target)
+        nodes_size: [size]
+        nodes_color: [hue]
+        edges_width: The width array that map to edges width
+        edges_color: The color array that map to edges color
+        nodes_size_range: Use to remap the nodes size, overwrite the min, max of nodes_size array
+        nodes_color_range: Use to remap the nodes colors, overwrite the min, max of nodes_color array
+        edges_width_range: Use to remap the edges width, overwrite the min, max of nodes_size array
+        edges_color_range: Use to remap the edges colors, overwrite the min, max of edges_color array
+        node_cmap: The colormap for node
+        edge_cmap: The colormap for edge
+        node_color_legend_title: Title for nodes colorbar
+        edge_color_legend_title: Title for edges colorbar
+        sizes: [sizes]
+        node_shape: The shape of the node. Specification is as matplotlib.scatter marker, one of ‘so^>v<dph8’.
+        linewidth: Line width of symbol border
+        connectionstyle: Pass the connectionstyle parameter to create curved arc of rounding
+            radius rad. For example, connectionstyle='arc3,rad=0.2'.
+            See `matplotlib.patches.ConnectionStyle <https://matplotlib.org/stable/api/_as_gen/matplotlib.patches.ConnectionStyle.html#matplotlib.patches.ConnectionStyle>`_ and
+            `matplotlib.patches.FancyArrowPatch <https://matplotlib.org/stable/api/_as_gen/matplotlib.patches.FancyArrowPatch.html#matplotlib.patches.FancyArrowPatch>`_ for more info.
+        layout: See
+            `networkx.drawing.layout <https://networkx.org/documentation/stable/reference/drawing.html#module-networkx.drawing.layout>`_
+        arrowstyle: For directed graphs and arrows==True defaults to ‘-|>’, See
+            `matplotlib.patches.ArrowStyle <https://matplotlib.org/stable/api/_as_gen/matplotlib.patches.ArrowStyle.html#matplotlib.patches.ArrowStyle>`_ for more options.
+        ax: [ax]
+
+    Returns:
+        [return_obj]
+
+    """
     G = nx.Graph(edges)
     if ax is None:
         _, ax = plt.subplots()
@@ -83,6 +117,7 @@ def graph(
                                            edge_vmin=edge_cmin,
                                            edge_vmax=edge_cmax,
                                            edge_cmap=cm.get_cmap(edge_cmap),
+                                           arrowstyle=arrowstyle,
                                            connectionstyle=connectionstyle,
                                            # for safety
                                            node_size=nodes_size,

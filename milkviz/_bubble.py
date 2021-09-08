@@ -7,22 +7,42 @@ import numpy as np
 import pandas as pd
 from matplotlib.colors import Colormap
 
-from milkviz.utils import norm_arr
+from milkviz.utils import norm_arr, doc
 from milkviz.utils.fig import set_size_legend, set_cbar
 
 
+@doc
 def bubble(data: Optional[pd.DataFrame] = None,
            x: Union[str, np.ndarray, None] = None,
            y: Union[str, np.ndarray, None] = None,
            hue: Union[str, np.ndarray, None] = None,
            size: Union[str, np.ndarray, None] = None,
-           color: Union[str, Colormap] = "bwr",
+           color: Union[str, Colormap] = "RdBu",
            sizes: Tuple[int, int] = (1, 500),
            size_legend_title: str = "size",
            hue_cbar_title: str = "hue",
            hue_cbar_ticklabels: Optional[List[str]] = None,
            ax: Optional[mpl.axes.Axes] = None,
            ) -> mpl.axes.Axes:
+    """Bubble plot
+
+    Args:
+        data: [data]
+        x: [x]
+        y: [y]
+        hue: [hue]
+        size: [size]
+        color: [color], either a cmap name or a `matplotlib.cm.ColorMap`
+        sizes: [sizes]
+        size_legend_title: [size_legend_title]
+        hue_cbar_title: [cbar_title]
+        hue_cbar_ticklabels: Overwrite the ticklabels on colorbar
+        ax: [ax]
+
+    Returns:
+        [return_obj]
+
+    """
     if data is not None:
         x = data[x].to_numpy()
         y = data[y].to_numpy()

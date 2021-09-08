@@ -14,7 +14,7 @@ def mask_triu(arr, k=1):
         arr = np.array(arr, dtype=np.float64)
     arr = arr.astype(np.float64)
     shape = arr.shape
-    if shape[0]!=shape[1]:
+    if shape[0] != shape[1]:
         raise ValueError("Must be a square")
     iu = np.triu_indices(shape[0], k=k)
     arr[iu] = np.nan

@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import cm
 
-from milkviz.utils import color_mapper_cat, set_cbar, set_category_legend
+from milkviz.utils import color_mapper_cat, set_cbar, set_category_legend, doc
 
 
 def anno_colors(info: pd.DataFrame, color: Union[str, List[str]]):
@@ -14,8 +14,9 @@ def anno_colors(info: pd.DataFrame, color: Union[str, List[str]]):
     return info.replace(colors_mapper)
 
 
+@doc
 def anno_clustermap(
-        df: pd.DataFrame,
+        data: pd.DataFrame,
         row_colors: Union[str, List[str], None] = None,
         row_label: Optional[str] = None,
         col_colors: Union[str, List[str], None] = None,
@@ -32,13 +33,37 @@ def anno_clustermap(
         col_colors_legend_pos: Optional[Tuple[float, float, float, float]] = None,
         **kwargs,
 ) -> sns.matrix.ClusterGrid:
+    """Color or label annotated clustermap
+
+    Args:
+        data: [data], multi-levels annotations should store in MultiIndex
+        row_colors: The index level used to label rows in color stripe
+        row_label: The index level used for x-axis label
+        col_colors: The columns level used to label columns in color stripe
+        col_label: The columns level used for y-axis label
+        heat_cmap: The colormap for heatmap
+        row_colors_cmap: The colormap for row_colors
+        col_colors_cmap: The colormap for col_colors
+        categorical_cbar: Turn the colorbar in to categorical legend in text
+        cbar_title: The colorbar title
+        cbar_pos: The colorbar position
+        row_colors_legend_title: Title for row_colors' legend
+        row_colors_legend_pos: row_colors' legend's position
+        col_colors_legend_title: Title for col_colors' legend
+        col_colors_legend_pos: col_colors' legend's position
+        **kwargs: Pass to `seaborn.clustermap <https://seaborn.pydata.org/generated/seaborn.clustermap.html#seaborn.clustermap>`_
+
+    Returns:
+        A `seaborn.matrix.ClusterGrid` instance
+
+    """
     # split the dataframe
-    data = df.to_numpy()
-    row_info = df.index.to_frame(index=False)
-    col_info = df.columns.to_frame(index=False)
+    raw_data = data.to_numpy()
+    row_info = data.index.to_frame(index=False)
+    col_info = data.columns.to_frame(index=False)
     row_label = row_info[row_label] if row_label is not None else None
     col_label = col_info[col_label] if col_label is not None else None
-    plot_data = pd.DataFrame(data, index=row_label, columns=col_label)
+    plot_data = pd.DataFrame(raw_data, index=row_label, columns=col_label)
 
     clustermap_kwargs = dict(cmap=heat_cmap, cbar_pos=None, **kwargs)
     row_colors_mapper = None
@@ -57,8 +82,8 @@ def anno_clustermap(
         clustermap_kwargs["col_colors"] = info.replace(col_colors_mapper)
 
     g = sns.clustermap(plot_data, **clustermap_kwargs)
-    cmin = np.nanmin(data)
-    cmax = np.nanmax(data)
+    cmin = np.nanmin(plot_data)
+    cmax = np.nanmax(plot_data)
     cbar_pos = (1.05, 0.0, 0.05, 0.15) if cbar_pos is None else cbar_pos
     if categorical_cbar is not None:
         cmap = cm.get_cmap(heat_cmap)

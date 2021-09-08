@@ -9,9 +9,10 @@ from matplotlib.collections import PatchCollection, LineCollection
 from natsort import natsorted
 
 from milkviz.utils import set_cbar, set_ticks, set_spines, \
-    color_mapper_cat, rotate_points, set_category_legend, color_mapper_val
+    color_mapper_cat, rotate_points, set_category_legend, color_mapper_val, doc
 
 
+@doc
 def point_map(
         x: Union[List[float], np.ndarray],
         y: Union[List[float], np.ndarray],
@@ -27,6 +28,27 @@ def point_map(
         no_spines: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
 ):
+    """Point map
+
+    Args:
+        x: The x-coord array
+        y: The y-coord array
+        types: [types] of points
+        values: [values] of points
+        links: The links between points, should be a list of (point_index_1, point_index_2)
+        color: [color]
+        legend_title: Title for legend
+        rotate: The degree to rotate the whole plot according to origin
+        markersize: The size of marker
+        linecolor: The color of lines
+        linewidth: The width of lines
+        no_spines: [no_spines]
+        ax: [ax]
+
+    Returns:
+        [return_obj]
+
+    """
     if ax is None:
         _, ax = plt.subplots()
     if no_spines:
@@ -64,6 +86,7 @@ def point_map(
     return ax
 
 
+@doc
 def polygon_map(
         polygons: List[List[Tuple[float, float]]],
         types: Union[List[str], np.ndarray, None] = None,
@@ -74,6 +97,22 @@ def polygon_map(
         no_spines: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
 ):
+    """Polygon map
+
+    Args:
+        polygons: A list of polygons, a polygon is represented by a list of points
+        types: [types] of polygons
+        values: [values] of polygons
+        color: [color]
+        legend_title: Title of legend
+        rotate: The degree to rotate the whole plot according to origin
+        no_spines: [no_spines]
+        ax: [ax]
+
+    Returns:
+        [return_obj]
+
+    """
     polygons = [np.array(polygon) for polygon in polygons]
     vstack_poly = np.vstack(polygons)
     xmin, ymin = np.min(vstack_poly, axis=0)

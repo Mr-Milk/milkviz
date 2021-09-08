@@ -33,6 +33,32 @@ def dot_heatmap(
         no_ticks: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
 ) -> mpl.axes.Axes:
+    """Dot heatmap + Matrix heatmap
+
+    Args:
+        dot_size: [size]
+        dot_hue: [hue]
+        matrix_hue: The color array that map to matrix colors
+        xticklabels: [xticklabels]
+        yticklabels: [yticklabels]
+        xlabel: [xlabel]
+        ylabel: [ylabel]
+        sizes: [sizes]
+        dot_color: The colormap for dot
+        matrix_color: The colormap for matrix
+        size_legend_title: [size_legend_title]
+        hue_cbar_title: [cbar_title] of dot hue
+        matrix_cbar_title: [cbar_title] of matrix hue
+        hue_cbar_ticklabels: Text to put on ticks of dot hue colorbar
+        matrix_cbar_ticklabels: Text to put on ticks of matrix hue colorbar
+        no_spines: [no_spines]
+        no_ticks: [no_ticks]
+        ax: [ax]
+
+    Returns:
+        [return_obj]
+
+    """
     ax, xcoord, ycoord = set_dot_grid(dot_size, ax=ax, xlabel=xlabel, ylabel=ylabel,
                                       xticklabels=xticklabels, yticklabels=yticklabels,
                                       no_spines=no_spines, no_ticks=no_ticks)
@@ -61,4 +87,3 @@ def dot_heatmap(
         set_cbar(ax, rects, (1.27, 0, 0.1, 0.3), matrix_cbar_title, rects_cmin, rects_cmax, matrix_cbar_ticklabels)
     plt.tight_layout()
     return ax
-

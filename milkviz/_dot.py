@@ -5,8 +5,7 @@ import matplotlib.axes
 import matplotlib.pyplot as plt
 import numpy as np
 
-from milkviz.utils import adaptive_figsize, norm_arr
-from milkviz.utils.fig import set_size_legend, set_spines, set_ticks
+from milkviz.utils import adaptive_figsize, norm_arr, doc, set_size_legend, set_spines, set_ticks
 
 
 def set_dot_grid(data,
@@ -47,6 +46,7 @@ def set_dot_grid(data,
     return ax, xcoord, ycoord
 
 
+@doc
 def dot(
         dot_size: np.ndarray,
         dot_hue: Union[str, np.ndarray, None] = None,
@@ -60,6 +60,25 @@ def dot(
         no_ticks: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
 ) -> mpl.axes.Axes:
+    """Dot plot
+
+    Args:
+        dot_size: [size]
+        dot_hue: [hue]
+        xticklabels: [xticklabels]
+        yticklabels: [yticklabels]
+        xlabel: [xlabel]
+        ylabel: [ylabel]
+        sizes: [sizes]
+        legend_title: [size_legend_title]
+        no_spines: [no_spines]
+        no_ticks: [no_ticks]
+        ax: [ax]
+
+    Returns:
+        [return_obj]
+
+    """
 
     ax, xcoord, ycoord = set_dot_grid(dot_size, ax=ax, xlabel=xlabel, ylabel=ylabel,
                                       xticklabels=xticklabels, yticklabels=yticklabels,
