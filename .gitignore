@@ -39,4 +39,4 @@ cover/
 
 # Sphinx documentation
 docs/_build/
-docs/auto_examples
+docs/gallery_examples
