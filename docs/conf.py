@@ -15,6 +15,9 @@
 # sys.path.insert(0, os.path.abspath('.'))
 from sphinx_gallery.sorting import ExplicitOrder
 from sphinx_gallery.scrapers import matplotlib_scraper
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class matplotlib_svg_scraper(object):

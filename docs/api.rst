@@ -13,3 +13,6 @@ API Reference
     graph
     point_map
     polygon_map
+    stacked_bar
+    upset
+    venn
