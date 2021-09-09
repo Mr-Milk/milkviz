@@ -14,6 +14,12 @@ def anno_colors(info: pd.DataFrame, color: Union[str, List[str]]):
     return info.replace(colors_mapper)
 
 
+def move_bbox(bbox, move_index, amount):
+    bbox = list(bbox)
+    bbox[move_index] += amount
+    return tuple(bbox)
+
+
 @doc
 def anno_clustermap(
         data: pd.DataFrame,
@@ -27,10 +33,9 @@ def anno_clustermap(
         categorical_cbar: Optional[List[str]] = None,
         cbar_title: str = "data",
         cbar_pos: Optional[Tuple[float, float, float, float]] = None,
-        row_colors_legend_title: str = "rows",
         row_colors_legend_pos: Optional[Tuple[float, float, float, float]] = None,
-        col_colors_legend_title: str = "cols",
         col_colors_legend_pos: Optional[Tuple[float, float, float, float]] = None,
+        legend_padding = 0.2,
         **kwargs,
 ) -> sns.matrix.ClusterGrid:
     """Color or label annotated clustermap
@@ -47,10 +52,9 @@ def anno_clustermap(
         categorical_cbar: Turn the colorbar in to categorical legend in text
         cbar_title: The colorbar title
         cbar_pos: The colorbar position
-        row_colors_legend_title: Title for row_colors' legend
-        row_colors_legend_pos: row_colors' legend's position
-        col_colors_legend_title: Title for col_colors' legend
-        col_colors_legend_pos: col_colors' legend's position
+        row_colors_legend_pos: row_colors' legend's position, default is (1.02, 0.35, 0.1, 0.3)
+        col_colors_legend_pos: col_colors' legend's position, default is (1.02, 0.7, 0.1, 0.3)
+        legend_padding: Use to specific the padding between multiple row/col legends
         **kwargs: Pass to `seaborn.clustermap <https://seaborn.pydata.org/generated/seaborn.clustermap.html#seaborn.clustermap>`_
 
     Returns:
@@ -68,15 +72,19 @@ def anno_clustermap(
     clustermap_kwargs = dict(cmap=heat_cmap, cbar_pos=None, **kwargs)
     row_colors_mapper = None
     col_colors_mapper = None
+    row_colors_legend_contents = None
+    col_colors_legend_contents = None
 
     if row_colors is not None:
         info = row_info[row_colors]
+        row_colors_legend_contents = {rc: np.unique(info[rc].to_numpy().flatten()) for rc in row_colors}
         uni_types = np.unique(info.to_numpy().flatten())
         row_colors_mapper = color_mapper_cat(row_colors_cmap, uni_types)
         clustermap_kwargs["row_colors"] = info.replace(row_colors_mapper)
 
     if col_colors is not None:
         info = col_info[col_colors]
+        col_colors_legend_contents = {cc: np.unique(info[cc].to_numpy().flatten()) for cc in col_colors}
         uni_types = np.unique(info.to_numpy().flatten())
         col_colors_mapper = color_mapper_cat(col_colors_cmap, uni_types)
         clustermap_kwargs["col_colors"] = info.replace(col_colors_mapper)
@@ -96,13 +104,21 @@ def anno_clustermap(
     # plot row colors legend
     if row_colors is not None:
         row_colors_legend_pos = (1.02, 0.35, 0.1, 0.3) if row_colors_legend_pos is None else row_colors_legend_pos
-        set_category_legend(g.ax_heatmap, row_colors_mapper, bbox=row_colors_legend_pos,
-                            title=row_colors_legend_title, marker="s")
+        row_colors_legend_pos = move_bbox(row_colors_legend_pos, 0, -legend_padding)
+        for k, v in row_colors_legend_contents.items():
+            row_colors_legend_pos = move_bbox(row_colors_legend_pos, 0, legend_padding)
+            row_cmapper = {i: row_colors_mapper[i] for i in v}
+            set_category_legend(g.ax_heatmap, row_cmapper, bbox=row_colors_legend_pos,
+                                title=k, marker="s")
     # plot col colors legend
     if col_colors is not None:
-        col_colors_legend_pos = (1.02, 0.8, 0.1, 0.3) if col_colors_legend_pos is None else col_colors_legend_pos
-        set_category_legend(g.ax_heatmap, col_colors_mapper, bbox=col_colors_legend_pos,
-                            title=col_colors_legend_title, marker="s")
+        col_colors_legend_pos = (1.02, 0.7, 0.1, 0.3) if col_colors_legend_pos is None else col_colors_legend_pos
+        col_colors_legend_pos = move_bbox(col_colors_legend_pos, 0, -legend_padding)
+        for k, v in col_colors_legend_contents.items():
+            col_colors_legend_pos = move_bbox(col_colors_legend_pos, 0, legend_padding)
+            col_cmapper = {i: col_colors_mapper[i] for i in v}
+            set_category_legend(g.ax_heatmap, col_cmapper, bbox=col_colors_legend_pos,
+                                title=k, marker="s")
 
     # close labels and ticks on y-axis
     if row_label is None:
