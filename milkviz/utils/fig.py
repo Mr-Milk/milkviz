@@ -5,6 +5,7 @@ import matplotlib as mpl
 import numpy as np
 from matplotlib import cm
 from matplotlib import colors as mcolors
+from matplotlib.colors import Colormap
 from matplotlib.colors import to_hex
 from matplotlib.lines import Line2D
 
@@ -81,13 +82,13 @@ def set_size_legend(ax, size_arr, markersize_arr, bbox, title):
 
 
 def set_category_legend(ax, cmapper, bbox, title, marker="o"):
-    legend_items = [Line2D((), (), marker=marker, linestyle="none", markersize=5, color=c, markerfacecolor=c, label=t)
+    legend_items = [Line2D((), (), marker=marker, linestyle="none", markersize=8, color=c, markerfacecolor=c, label=t)
                     for t, c in cmapper.items()]
     ncol = round(len(legend_items) / 10)
     ncol = ncol if ncol > 0 else 1
     legend = ax.legend(handles=legend_items, loc="upper left", bbox_to_anchor=bbox,
-                       frameon=False, title=title, ncol=ncol,
-                       fontsize=mpl.rcParams["font.size"])
+                       frameon=False, title=title, ncol=ncol, columnspacing=0.8,
+                       handletextpad=0.1, fontsize=mpl.rcParams["font.size"])
     ax.add_artist(legend)
 
 
@@ -99,9 +100,25 @@ def set_spines(ax, status=(0, 0, 0, 0)):
 def set_ticks(ax, xticks="none", yticks="none"):
     ax.xaxis.set_ticks_position(xticks)
     ax.yaxis.set_ticks_position(yticks)
+    
+
+def get_cmap_colors(color: Union[str, Colormap]):
+    if isinstance(color, str):
+        color = cm.get_cmap(color)
+    return [to_hex(color(i), keep_alpha=True) for i in range(color.N)]
 
 
 def color_mapper_cat(color: Union[str, List[str]], types: Union[List[Any], np.ndarray]):
+    """
+    
+    Args:
+        color: 
+        types: 
+
+    Returns:
+        {type: color}
+        
+    """
     N = len(types)
     if isinstance(color, str):
         color = [color]
@@ -109,8 +126,7 @@ def color_mapper_cat(color: Union[str, List[str]], types: Union[List[Any], np.nd
     all_colors = []
     for c in cycle(color):
         if len(all_colors) < N:
-            cmap = cm.get_cmap(c)
-            all_colors += [to_hex(cmap(i), keep_alpha=True) for i in range(cmap.N)]
+            all_colors += get_cmap_colors(c)
         else:
             break
 
