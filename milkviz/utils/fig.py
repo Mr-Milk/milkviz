@@ -3,11 +3,15 @@ from typing import Union, List, Any
 
 import matplotlib as mpl
 import numpy as np
+from natsort import natsorted
 from matplotlib import cm
 from matplotlib import colors as mcolors
 from matplotlib.colors import Colormap
 from matplotlib.colors import to_hex
 from matplotlib.lines import Line2D
+
+
+Colors = Union[str, List[str], Colormap, List[Colormap]]
 
 
 def mask_triu(arr, k=1):
@@ -102,42 +106,71 @@ def set_ticks(ax, xticks="none", yticks="none"):
     ax.yaxis.set_ticks_position(yticks)
     
 
-def get_cmap_colors(color: Union[str, Colormap]):
-    if isinstance(color, str):
-        color = cm.get_cmap(color)
-    return [to_hex(color(i), keep_alpha=True) for i in range(color.N)]
+def get_cmap_colors(color: Union[str, List[str], Colormap, List[Colormap]]):
+    """This utility function allow different color input
+    
+    1) colormap name, list of colormap name
+    2) color name, list of color name
+    3) colormap instance, list of instance
+    
+    """
+    if isinstance(color, (str, Colormap)):
+        color = [color]
+    test_c = color[0]
+    if isinstance(test_c, str):
+        if mcolors.is_color_like(test_c):
+            return [to_hex(c, keep_alpha=True) for c in color]
+        else:
+            colors = []
+            for cmap_ in color:
+                cmap = cm.get_cmap(cmap_)
+                colors += [to_hex(cmap(i), keep_alpha=True) for i in range(cmap.N)]
+            return colors
+    else:
+        colors = []
+        for c in color:
+            colors += [to_hex(c(i), keep_alpha=True) for i in range(c.N)]
+        return colors
 
 
-def color_mapper_cat(color: Union[str, List[str]], types: Union[List[Any], np.ndarray]):
+
+
+def color_mapper_cat(color: Colors, types: Union[List[Any], np.ndarray]):
     """
     
     Args:
-        color: 
-        types: 
+        color: The color array or colormap
+        types: All input types
 
     Returns:
         {type: color}
         
     """
-    N = len(types)
-    if isinstance(color, str):
-        color = [color]
+    if len(color) == len(types):
+        return dict(zip(types, color))
+    else:
+        types = natsorted(np.unique(types))
+        N = len(types)
+        if isinstance(color, str):
+            color = [color]
 
-    all_colors = []
-    for c in cycle(color):
-        if len(all_colors) < N:
-            all_colors += get_cmap_colors(c)
-        else:
-            break
+        all_colors = []
+        for c in cycle(color):
+            if len(all_colors) < N:
+                all_colors += get_cmap_colors(c)
+            else:
+                break
 
-    return dict(zip(types, all_colors))
+        return dict(zip(types, all_colors))
 
 
-def color_mapper_val(color: str, values: Union[List[Any], np.ndarray]):
+def color_mapper_val(color: Union[str, Union[str], Colormap], values: Union[List[Any], np.ndarray]):
     if not isinstance(values, np.ndarray):
         values = np.ndarray(values)
     vmin = np.nanmin(values)
     vmax = np.nanmax(values)
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    if not isinstance(color, (str, Colormap)):
+        color = ListedColormap(color)
     mapper = cm.ScalarMappable(norm=norm, cmap=color)
     return [to_hex(mapper.to_rgba(v), keep_alpha=True) for v in values]

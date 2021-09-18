@@ -4,6 +4,7 @@ import matplotlib as mpl
 import matplotlib.axes
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+from matplotlib.colors import Colormap
 import numpy as np
 from matplotlib.collections import PatchCollection, LineCollection
 from natsort import natsorted
@@ -19,7 +20,8 @@ def point_map(
         types: Union[List[str], np.ndarray, None] = None,
         values: Union[List[float], np.ndarray, None] = None,
         links: Union[List[Tuple[int, int]], np.ndarray, None] = None,
-        color: Union[str, List[str], None] = None,
+        colors: Optional[List[str]] = None,
+        cmap: Union[str, Colormap] = None,
         legend_title: Optional[str] = None,
         rotate: Optional[int] = None,
         markersize: Optional[int] = 5,
@@ -91,7 +93,7 @@ def polygon_map(
         polygons: List[List[Tuple[float, float]]],
         types: Union[List[str], np.ndarray, None] = None,
         values: Union[List[float], np.ndarray, None] = None,
-        color: Union[str, List[str], None] = None,
+        colors: Union[str, List[str], None] = None,
         legend_title: Optional[str] = None,
         rotate: Optional[int] = None,
         no_spines: bool = True,
