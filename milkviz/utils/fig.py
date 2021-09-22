@@ -1,5 +1,5 @@
 from itertools import cycle
-from typing import Union, List, Any
+from typing import Union, List, Any, Optional, Dict, Tuple
 
 import matplotlib as mpl
 import numpy as np
@@ -11,7 +11,7 @@ from matplotlib.colors import to_hex
 from matplotlib.lines import Line2D
 
 
-Colors = Union[str, List[str], Colormap, List[Colormap]]
+Colors = Union[str, List[str], Colormap]
 
 
 def mask_triu(arr, k=1):
@@ -106,71 +106,72 @@ def set_ticks(ax, xticks="none", yticks="none"):
     ax.yaxis.set_ticks_position(yticks)
     
 
-def get_cmap_colors(color: Union[str, List[str], Colormap, List[Colormap]]):
+def create_cmap(c_array: List[str], name: str ="custom_cmap") -> Colormap:
+    return mcolors.ListedColormap(c_array, name=name)
+
+
+def get_cmap_colors(color: Colors):
     """This utility function allow different color input
     
-    1) colormap name, list of colormap name
-    2) color name, list of color name
-    3) colormap instance, list of instance
+    1) colormap name
+    2) colormap instance
+    3) color name, list of color name
     
     """
-    if isinstance(color, (str, Colormap)):
-        color = [color]
-    test_c = color[0]
-    if isinstance(test_c, str):
-        if mcolors.is_color_like(test_c):
-            return [to_hex(c, keep_alpha=True) for c in color]
-        else:
-            colors = []
-            for cmap_ in color:
-                cmap = cm.get_cmap(cmap_)
-                colors += [to_hex(cmap(i), keep_alpha=True) for i in range(cmap.N)]
-            return colors
+    cmap = None
+    if isinstance(color, str):
+        cmap = cm.get_cmap(color)
+    elif isinstance(color, Colormap):
+        cmap = color
     else:
-        colors = []
-        for c in color:
-            colors += [to_hex(c(i), keep_alpha=True) for i in range(c.N)]
-        return colors
+        return [to_hex(c, keep_alpha=True) for c in color]
+
+    return [to_hex(cmap(i), keep_alpha=True) for i in range(cmap.N)]
 
 
 
-
-def color_mapper_cat(color: Colors, types: Union[List[Any], np.ndarray]):
+def color_mapper_cat(types: Union[List[Any], np.ndarray],
+                     c_array: Optional[List[str]] = None,
+                     cmap: Optional[Colors] = None,
+                     ) -> Dict:
     """
     
     Args:
-        color: The color array or colormap
         types: All input types
+        c_array: The color array that maps to the types
+        cmap: An array of colors or colormap
+
 
     Returns:
         {type: color}
         
     """
-    if len(color) == len(types):
-        return dict(zip(types, color))
-    else:
-        types = natsorted(np.unique(types))
-        N = len(types)
-        if isinstance(color, str):
-            color = [color]
-
+    N = len(types)
+    uni_types = natsorted(np.unique(types))
+    if c_array is not None:
+        if len(c_array) < N:
+            raise ValueError(f"The length of input color array {len(c_array)} does not match types {N}")
+        else:
+            cmapper = dict(zip(types, c_array))
+            return {k: cmapper[k] for k in uni_types}
+    if cmap is not None:
         all_colors = []
-        for c in cycle(color):
-            if len(all_colors) < N:
-                all_colors += get_cmap_colors(c)
-            else:
-                break
+        colors_pool = get_cmap_colors(cmap)
+        while len(all_colors) < N:
+            all_colors += colors_pool
 
-        return dict(zip(types, all_colors))
+        return dict(zip(uni_types, all_colors))
 
 
-def color_mapper_val(color: Union[str, Union[str], Colormap], values: Union[List[Any], np.ndarray]):
+def color_mapper_val(values: Union[List[Any], np.ndarray],
+                     c_array: Optional[List[str]] = None,
+                     cmap: Optional[Colors] = None,) -> List[Tuple]:
     if not isinstance(values, np.ndarray):
         values = np.ndarray(values)
     vmin = np.nanmin(values)
     vmax = np.nanmax(values)
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-    if not isinstance(color, (str, Colormap)):
-        color = ListedColormap(color)
-    mapper = cm.ScalarMappable(norm=norm, cmap=color)
+    if c_array is not None:
+        cmap = create_cmap(c_array)
+    mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
     return [to_hex(mapper.to_rgba(v), keep_alpha=True) for v in values]

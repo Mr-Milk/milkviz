@@ -17,7 +17,7 @@ def bubble(data: Optional[pd.DataFrame] = None,
            y: Union[str, np.ndarray, None] = None,
            hue: Union[str, np.ndarray, None] = None,
            size: Union[str, np.ndarray, None] = None,
-           color: Union[str, Colormap] = "RdBu",
+           cmap: Union[str, Colormap] = "RdBu",
            sizes: Tuple[int, int] = (1, 500),
            size_legend_title: str = "size",
            hue_cbar_title: str = "hue",
@@ -32,7 +32,7 @@ def bubble(data: Optional[pd.DataFrame] = None,
         y: [y]
         hue: [hue]
         size: [size]
-        color: [color], either a cmap name or a `matplotlib.cm.ColorMap`
+        cmap: [cmap]
         sizes: [sizes]
         size_legend_title: [size_legend_title]
         hue_cbar_title: [cbar_title]
@@ -56,7 +56,7 @@ def bubble(data: Optional[pd.DataFrame] = None,
         _, ax = plt.subplots()
 
     circ_size = norm_arr(size, sizes)
-    bubbles = plt.scatter(x, y, s=circ_size, c=hue, cmap=color)
+    bubbles = plt.scatter(x, y, s=circ_size, c=hue, cmap=cmap)
     set_size_legend(ax, size, circ_size, bbox=(1.05, 0, 1, 1), title=size_legend_title)
     if hue is not None:
         cmin = np.nanmin(hue)

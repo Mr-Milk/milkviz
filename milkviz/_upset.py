@@ -14,7 +14,7 @@ from milkviz.utils import doc
 def upset(
         data: List[List[Any]],
         names: Optional[List[str]] = None,
-        orientation: str = "vertical",
+        orient: str = "v",
         min_subset_size: Optional[int] = None,
         max_subset_size: Optional[int] = None,
         min_degree: Optional[int] = None,
@@ -33,7 +33,7 @@ def upset(
     Args:
         data: A series of anything, set will be auto computed for it
         names: The name for each set
-        orientation: "vertical" or "horizontal"
+        orient: "v" or "h"
         {min, max}_subset_size: Minimum/Maximum size threshold of a subset to be shown in the plot.
         {min, max}_degree: Minimum/Maximum degree of a subset to be shown in the plot
         show_counts: Whether to label the intersection size bars with the cardinality of the intersection.
@@ -48,7 +48,7 @@ def upset(
     if fig is None:
         fig = plt.figure()
     params = dict(
-        orientation="vertical" if orientation == "horizontal" else "horizontal",
+        orientation="vertical" if orient == "h" else "horizontal",
         min_subset_size=min_subset_size,
         max_subset_size=max_subset_size,
         min_degree=min_degree,

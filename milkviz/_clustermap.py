@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import cm
+from matplotlib.colors import Colormap
 
 from milkviz.utils import color_mapper_cat, set_cbar, set_category_legend, doc
 
@@ -27,7 +28,7 @@ def anno_clustermap(
         row_label: Optional[str] = None,
         col_colors: Union[str, List[str], None] = None,
         col_label: Optional[str] = None,
-        heat_cmap: str = "RdBu_r",
+        heat_cmap: Union[str, Colormap] = "RdBu_r",
         row_colors_cmap: Union[str, List[str]] = "tab20",
         col_colors_cmap: Union[str, List[str]] = "Set2",
         categorical_cbar: Optional[List[str]] = None,

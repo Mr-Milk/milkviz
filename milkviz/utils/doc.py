@@ -8,7 +8,7 @@ PARAMETERS_DOCSTRINGS = dict(
     y="Either a key in data or a numpy array",
     hue="The color array that map to marker colors",
     size="The size array that map to marker sizes",
-    color="The colormap for the markers",
+    cmap="The colormap to be used, either a cmap name or a `matplotlib.cm.ColorMap`",
     xticklabels="Text to put on the x-axis ticks",
     yticklabels="Text to put on the y-axis ticks",
     xlabel="Title for x-axis",
@@ -18,8 +18,9 @@ PARAMETERS_DOCSTRINGS = dict(
     sizes="The size range of circle markers, (min, max)",
     no_spines="If True, will turn off the frame of the plot",
     no_ticks="If True, will turn off both major and minor ticks",
-    size_legend_title="Title for size legend",
-    cbar_title="Title for colorbar",
+    legend_title="The title of legend",
+    size_legend_title="The title of size legend",
+    cbar_title="The title of colorbar",
     return_obj="A `matplotlib.axes.Axes` instance",
 )
 
