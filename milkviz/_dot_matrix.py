@@ -9,7 +9,7 @@ from matplotlib.collections import PatchCollection
 from matplotlib.colors import Colormap
 
 from milkviz._dot import set_dot_grid
-from milkviz.utils import doc, norm_arr, set_cbar, set_size_legend, get_render_size
+from milkviz.utils import doc, norm_arr, set_cbar, set_size_legend
 
 
 @doc
@@ -51,6 +51,8 @@ def dot_heatmap(
         size_legend_title: [size_legend_title]
         hue_cbar_title: [cbar_title] of dot hue
         matrix_cbar_title: [cbar_title] of matrix hue
+        hue_cbar_pos: Default is (1.07, 0, 0.1, 0.3)
+        matrix_cbar_pos: Default is (1.27, 0, 0.1, 0.3)
         hue_cbar_ticklabels: Text to put on ticks of dot hue colorbar
         matrix_cbar_ticklabels: Text to put on ticks of matrix hue colorbar
         no_spines: [no_spines]
@@ -75,7 +77,7 @@ def dot_heatmap(
 
     # adding dot colorbar
     hue_cbar_pos = (1.07, 0, 0.1, 0.3) if hue_cbar_pos is None else hue_cbar_pos
-    matrix_cbar_pos = (1.07, 0, 0.1, 0.3) if matrix_cbar_pos is None else matrix_cbar_pos
+    matrix_cbar_pos = (1.27, 0, 0.1, 0.3) if matrix_cbar_pos is None else matrix_cbar_pos
     set_cbar(ax, circles, hue_cbar_pos, hue_cbar_title, circ_cmin, circ_cmax, hue_cbar_ticklabels)
 
     if matrix_hue is not None:

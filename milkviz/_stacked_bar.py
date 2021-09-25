@@ -1,16 +1,15 @@
-from typing import Optional, List, Union, Tuple
+from typing import Optional, Union
 
 import matplotlib as mpl
-from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.colors import Colormap
 import seaborn as sns
-from natsort import natsorted
+from matplotlib.axes import Axes
+from matplotlib.colors import Colormap
 
-from milkviz.utils import norm_arr, doc
-from milkviz.utils import set_size_legend, set_cbar, get_cmap_colors, set_category_legend, set_spines
+from milkviz.utils import doc
+from milkviz.utils import get_cmap_colors, set_category_legend, set_spines
 
 
 def fold_add(arr):
@@ -88,7 +87,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
         bar = sns.barplot(x=x, y=y, data=g, ax=ax, color=c, orient=orient, ci=None, **kwargs)
         if show_values:
             for i in range(len(g)):
-                text = g.iloc[i,:][value_key]
+                text = g.iloc[i, :][value_key]
                 if orient == "v":
                     bar.text(i, text, text, ha="center", va="center", bbox=dict(fc="white", alpha=0.7))
                 else:

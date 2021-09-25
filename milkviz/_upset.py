@@ -1,11 +1,10 @@
-from typing import Optional, Union, Set, Tuple, List, Dict, Any
-from collections import Counter
+from typing import Optional, List, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from upsetplot import from_contents
 from upsetplot import UpSet
+from upsetplot import from_contents
 
 from milkviz.utils import doc
 

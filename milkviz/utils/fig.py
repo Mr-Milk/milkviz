@@ -1,15 +1,13 @@
-from itertools import cycle
 from typing import Union, List, Any, Optional, Dict, Tuple
 
 import matplotlib as mpl
 import numpy as np
-from natsort import natsorted
 from matplotlib import cm
 from matplotlib import colors as mcolors
 from matplotlib.colors import Colormap
 from matplotlib.colors import to_hex
 from matplotlib.lines import Line2D
-
+from natsort import natsorted
 
 Colors = Union[str, List[str], Colormap]
 
@@ -95,9 +93,9 @@ def set_size_legend(ax, size_arr, markersize_arr, bbox, title):
         else:
             label = round(np.nanmax(size_arr) * ratio, 2)
         item = Line2D((), (), linestyle="none", marker="o", color="black", markerfacecolor="black",
-                           label=str(label),
-                           markersize=np.sqrt((np.nanmax(markersize_arr))) * ratio
-                           )
+                      label=str(label),
+                      markersize=np.sqrt((np.nanmax(markersize_arr))) * ratio
+                      )
         legend_items.append(item)
     legend = ax.legend(handles=legend_items, loc="upper left", bbox_to_anchor=bbox,
                        frameon=False, labelspacing=1.2, title=title,
@@ -128,9 +126,9 @@ def set_spines(ax, status=(0, 0, 0, 0)):
 def set_ticks(ax, xticks="none", yticks="none"):
     ax.xaxis.set_ticks_position(xticks)
     ax.yaxis.set_ticks_position(yticks)
-    
 
-def create_cmap(c_array: List[str], name: str ="custom_cmap") -> Colormap:
+
+def create_cmap(c_array: List[str], name: str = "custom_cmap") -> Colormap:
     return mcolors.ListedColormap(c_array, name=name)
 
 
@@ -151,7 +149,6 @@ def get_cmap_colors(color: Colors):
         return [to_hex(c, keep_alpha=True) for c in color]
 
     return [to_hex(cmap(i), keep_alpha=True) for i in range(cmap.N)]
-
 
 
 def color_mapper_cat(types: Union[List[Any], np.ndarray],
@@ -189,7 +186,7 @@ def color_mapper_cat(types: Union[List[Any], np.ndarray],
 
 def color_mapper_val(values: Union[List[Any], np.ndarray],
                      c_array: Optional[List[str]] = None,
-                     cmap: Optional[Colors] = None,) -> List[Tuple]:
+                     cmap: Optional[Colors] = None, ) -> List[Tuple]:
     if not isinstance(values, np.ndarray):
         values = np.ndarray(values)
     vmin = np.nanmin(values)

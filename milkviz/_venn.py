@@ -1,7 +1,8 @@
-from typing import Optional, Union, Set, Tuple, List, Dict, Any
 from collections import Counter
-import numpy as np
+from typing import Optional, Union, Set, List, Any
+
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
 from matplotlib_venn import venn2, venn3, venn2_unweighted, venn3_unweighted
 
@@ -67,15 +68,15 @@ def venn(
             s1, s2 = data
             s1s2 = find_intersec(s1, s2)
             s1, s2 = len(s1), len(s2)
-            data = (s1 - s1s2, s2- s1s2, s1s2)
+            data = (s1 - s1s2, s2 - s1s2, s1s2)
             venn_num = 2
         else:
             s1, s2, s3 = data
-            s1s2, s1s3, s2s3, s1s2s3 = find_intersec(s1, s2), find_intersec(s1, s3),\
+            s1s2, s1s3, s2s3, s1s2s3 = find_intersec(s1, s2), find_intersec(s1, s3), \
                                        find_intersec(s2, s3), find_intersec(s1, s2, s3)
             s1, s2, s3 = len(s1), len(s2), len(s3)
-            data = (s1-s1s2-s1s3+s1s2s3, s2-s1s2-s2s3+s1s2s3, s1s2-s1s2s3,
-                    s3-s1s3-s2s3+s1s2s3, s1s3-s1s2s3, s2s3-s1s2s3, s1s2s3)
+            data = (s1 - s1s2 - s1s3 + s1s2s3, s2 - s1s2 - s2s3 + s1s2s3, s1s2 - s1s2s3,
+                    s3 - s1s3 - s2s3 + s1s2s3, s1s3 - s1s2s3, s2s3 - s1s2s3, s1s2s3)
             venn_num = 3
     # user input is regions area
     elif isinstance(data[0], int):
@@ -93,7 +94,7 @@ def venn(
                              f"showing intersection between no more than 3 sets,"
                              f"please use upset plot instead for sets > 3.")
         venn_num = s
-    
+
     if venn_num == 2:
         venn_func = venn2 if weighted else venn2_unweighted
         patch_order = ('10', '01', '11')
@@ -103,7 +104,6 @@ def venn(
     else:
         raise ValueError(f"Intersection only happens between more than 2 sets.")
 
-    
     v = venn_func(data, names, colors, normalize_to=normalize_to, ax=ax)
     alpah_array = [0.4 for _ in range(len(patch_order))]
     if alpha is not None:
@@ -125,6 +125,3 @@ def venn(
                 l.set_text(label)
 
     return ax
-
-
-

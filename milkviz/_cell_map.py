@@ -4,9 +4,9 @@ import matplotlib as mpl
 import matplotlib.axes
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-from matplotlib.colors import Colormap
 import numpy as np
 from matplotlib.collections import PatchCollection, LineCollection
+from matplotlib.colors import Colormap
 from natsort import natsorted
 
 from milkviz.utils import set_cbar, set_ticks, set_spines, \
