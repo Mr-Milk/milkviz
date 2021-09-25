@@ -18,26 +18,27 @@ def set_dot_grid(data,
                  no_ticks=True,
                  min_side=4,
                  ):
-    M, N = data.shape
-    x, y = np.meshgrid(np.arange(M), np.arange(N))  # Get the coordinates
+    Y, X = data.shape
+    x, y = np.meshgrid(np.arange(X), np.arange(Y))  # Get the coordinates
     xcoord = x.flatten()
     ycoord = y.flatten()
 
     if ax is None:
-        figsize = adaptive_figsize((M / 2, N / 2), min_side=min_side)
+        ratio = 0.6
+        figsize = adaptive_figsize((X * ratio, Y * ratio), min_side=min_side)
         _, ax = plt.subplots(figsize=figsize)
     if no_spines:
         set_spines(ax)
     if no_ticks:
         set_ticks(ax)
     ax.set_aspect("equal")
-    ax.set_xlim(-0.5, M - 0.5)
-    ax.set_ylim(-0.5, N - 0.5)
+    ax.set_xlim(-0.5, X - 0.5)
+    ax.set_ylim(-0.5, Y - 0.5)
     ax.set(
         xlabel=xlabel,
         ylabel=ylabel,
-        xticks=np.arange(M),
-        yticks=np.arange(N),
+        xticks=np.arange(X),
+        yticks=np.arange(Y),
         xticklabels=xticklabels if xticklabels is not None else [],
         yticklabels=yticklabels if yticklabels is not None else [],
     )
@@ -82,7 +83,7 @@ def dot(
 
     ax, xcoord, ycoord = set_dot_grid(dot_size, ax=ax, xlabel=xlabel, ylabel=ylabel,
                                       xticklabels=xticklabels, yticklabels=yticklabels,
-                                      no_spines=no_spines, no_ticks=no_ticks, min_side=2)
+                                      no_spines=no_spines, no_ticks=no_ticks, min_side=3)
 
     if dot_hue is not None:
         if isinstance(dot_hue, str):

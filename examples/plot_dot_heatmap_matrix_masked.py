@@ -7,7 +7,7 @@ Here shows how to draw a triangle dot heatmap and dot heatmap + matrix heatmap
 """
 import numpy as np
 import milkviz as mv
-from milkviz.utils import mask_triu
+from milkviz import mask_triu
 
 # %%
 # First let's create some random data

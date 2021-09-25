@@ -59,6 +59,19 @@ def adaptive_figsize(size, min_side=5):
     return tuple(size)
 
 
+def get_ax_size(ax):
+    x = ax.get_xlim()
+    y = ax.get_ylim()
+    x_side = x[1] - x[0]
+    y_side = y[1] - y[0]
+    return x_side, y_side
+
+
+def get_render_size(ax):
+    f = ax.get_figure()
+    return f.get_figwidth(), f.get_figheight()
+
+
 def set_cbar(ax, patches=None, bbox=None, title=None, cmin=None, cmax=None, ticklabels=None, cmap=None):
     axins = ax.inset_axes(bbox, transform=ax.transAxes)
     fig = ax.get_figure()
@@ -74,10 +87,18 @@ def set_cbar(ax, patches=None, bbox=None, title=None, cmin=None, cmax=None, tick
 
 
 def set_size_legend(ax, size_arr, markersize_arr, bbox, title):
-    legend_items = [Line2D((), (), linestyle="none", marker="o", color="black", markerfacecolor="black",
-                           label=f"{round(np.nanmax(size_arr) * ratio, 2)}",
+    size_arr = np.asarray(size_arr).flatten()
+    legend_items = []
+    for ratio in [1.0, 0.6, 0.2]:
+        if isinstance(size_arr[0], (int, np.integer)):
+            label = int(np.nanmax(size_arr) * ratio)
+        else:
+            label = round(np.nanmax(size_arr) * ratio, 2)
+        item = Line2D((), (), linestyle="none", marker="o", color="black", markerfacecolor="black",
+                           label=str(label),
                            markersize=np.sqrt((np.nanmax(markersize_arr))) * ratio
-                           ) for ratio in [1.0, 0.66, 0.33]]
+                           )
+        legend_items.append(item)
     legend = ax.legend(handles=legend_items, loc="upper left", bbox_to_anchor=bbox,
                        frameon=False, labelspacing=1.2, title=title,
                        fontsize=mpl.rcParams["font.size"])
@@ -85,15 +106,18 @@ def set_size_legend(ax, size_arr, markersize_arr, bbox, title):
     ax.add_artist(legend)
 
 
-def set_category_legend(ax, cmapper, bbox, title, marker="o"):
+def set_category_legend(ax, cmapper, bbox, title, marker="o", reverse=False):
     legend_items = [Line2D((), (), marker=marker, linestyle="none", markersize=8, color=c, markerfacecolor=c, label=t)
                     for t, c in cmapper.items()]
+    if reverse:
+        legend_items = legend_items[::-1]
     ncol = round(len(legend_items) / 10)
     ncol = ncol if ncol > 0 else 1
     legend = ax.legend(handles=legend_items, loc="upper left", bbox_to_anchor=bbox,
                        frameon=False, title=title, ncol=ncol, columnspacing=0.8,
                        handletextpad=0.1, fontsize=mpl.rcParams["font.size"])
     ax.add_artist(legend)
+    return ncol
 
 
 def set_spines(ax, status=(0, 0, 0, 0)):

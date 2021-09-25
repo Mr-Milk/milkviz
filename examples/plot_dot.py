@@ -12,8 +12,8 @@ import milkviz as mv
 # First let's create some random data
 # -------------------------------------
 #
-shape = (3, 10)
-colors = np.repeat(['#3A3226', '#CB1B45', '#F75C2F'], 10).reshape(10, 3).T
+shape = (10, 3)
+colors = np.repeat([['#3A3226', '#CB1B45', '#F75C2F']], 10, axis=0)
 sizes = np.random.randn(*shape)
 matrix = np.random.randn(*shape)
 labels = ["apple", "banana", "Coconut", "Plum", "Kiwifruit",

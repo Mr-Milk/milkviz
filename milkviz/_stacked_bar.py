@@ -43,6 +43,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
         orient: "v" or "h"
         percentage: Normalize value to 1
         cmap: [cmap]
+        show_values: Whether to display values of each block
         ax: [ax]
         **kwargs: Pass to `seaborn.barplot <https://seaborn.pydata.org/generated/seaborn.barplot.html#seaborn.barplot>`_
 
@@ -88,7 +89,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
         if show_values:
             for i in range(len(g)):
                 text = g.iloc[i,:][value_key]
-                if orient == "vertical":
+                if orient == "v":
                     bar.text(i, text, text, ha="center", va="center", bbox=dict(fc="white", alpha=0.7))
                 else:
                     bar.text(text, i, text, ha="center", va="center", rotation=-90, bbox=dict(fc="white", alpha=0.7))

@@ -7,3 +7,4 @@ from ._graph import graph
 from ._stacked_bar import stacked_bar
 from ._venn import venn
 from ._upset import upset
+from .utils import mask_triu
