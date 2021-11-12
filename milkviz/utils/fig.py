@@ -84,11 +84,11 @@ def set_cbar(ax, patches=None, bbox=None, title=None, cmin=None, cmax=None, tick
         cbar.ax.set_yticklabels(list(ticklabels))
 
 
-def set_size_legend(ax, size_arr, markersize_arr, bbox, title):
-    size_arr = np.asarray(size_arr).flatten()
+def set_size_legend(ax, size_arr, markersize_arr, bbox, title, dtype=None):
+    size_arr = np.asarray(size_arr, dtype=dtype).flatten()
     legend_items = []
     for ratio in [1.0, 0.6, 0.2]:
-        if isinstance(size_arr[0], (int, np.integer)):
+        if isinstance(size_arr[0], (int, np.integer)) or (dtype == int) or (dtype == np.integer):
             label = int(np.nanmax(size_arr) * ratio)
         else:
             label = round(np.nanmax(size_arr) * ratio, 2)

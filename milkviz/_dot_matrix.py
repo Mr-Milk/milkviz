@@ -1,4 +1,4 @@
-from typing import Optional, List, Union, Tuple
+from typing import Optional, List, Union, Tuple, Any
 
 import matplotlib as mpl
 import matplotlib.axes
@@ -22,6 +22,7 @@ def dot_heatmap(
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         sizes: Tuple[int, int] = (1, 500),
+        size_dtype: Any = None,
         dot_cmap: Union[str, Colormap, None] = "RdBu",
         matrix_cmap: Union[str, Colormap, None] = "YlGn",
         size_legend_title: str = "Dot size",
@@ -46,6 +47,7 @@ def dot_heatmap(
         xlabel: [xlabel]
         ylabel: [ylabel]
         sizes: [sizes]
+        size_dtype: [size_dtype]
         dot_cmap: The colormap for dot
         matrix_cmap: The colormap for matrix
         size_legend_title: [size_legend_title]
@@ -73,7 +75,7 @@ def dot_heatmap(
     circ_cmax = np.nanmax(circ_colors)
     circles = plt.scatter(xcoord, ycoord, s=circ_size, c=circ_colors, cmap=dot_cmap)
     # adding dot size legend
-    set_size_legend(ax, dot_size, circ_size, (1.05, 0, 1, 1), size_legend_title)
+    set_size_legend(ax, dot_size, circ_size, (1.05, 0, 1, 1), size_legend_title, dtype=size_dtype)
 
     # adding dot colorbar
     hue_cbar_pos = (1.07, 0, 0.1, 0.3) if hue_cbar_pos is None else hue_cbar_pos

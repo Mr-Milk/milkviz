@@ -10,7 +10,7 @@ from matplotlib.colors import Colormap
 from natsort import natsorted
 
 from milkviz.utils import set_cbar, set_ticks, set_spines, \
-    color_mapper_cat, rotate_points, set_category_legend, color_mapper_val, doc, create_cmap
+    color_mapper_cat, rotate_points, set_category_legend, color_mapper_val, doc, create_cmap, normalize
 
 
 @doc
@@ -20,6 +20,8 @@ def point_map(
         types: Union[List[str], np.ndarray, None] = None,
         values: Union[List[float], np.ndarray, None] = None,
         links: Union[List[Tuple[int, int]], np.ndarray, None] = None,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
         colors: Optional[List[Any]] = None,
         cmap: Union[str, Colormap] = None,
         legend_title: Optional[str] = None,
@@ -53,7 +55,7 @@ def point_map(
 
     """
     if ax is None:
-        _, ax = plt.subplots()
+        _, ax = plt.gca()
     if no_spines:
         set_spines(ax)
     set_ticks(ax)
@@ -86,6 +88,7 @@ def point_map(
     else:
         cmap = "OrRd" if cmap is None else cmap
         legend_title = "value" if legend_title is None else legend_title
+        values = normalize(values, vmin, vmax)
         if colors is not None:
             vc_mapper = dict(zip(values, colors))
             cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
@@ -139,7 +142,7 @@ def polygon_map(
         polygons = rotated_polygons
 
     if ax is None:
-        _, ax = plt.subplots()
+        _, ax = plt.gca()
     if no_spines:
         set_spines(ax)
     set_ticks(ax)

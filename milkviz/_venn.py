@@ -4,7 +4,6 @@ from typing import Optional, Union, Set, List, Any
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from matplotlib_venn import venn2, venn3, venn2_unweighted, venn3_unweighted
 
 from milkviz.utils import doc
 
@@ -55,8 +54,12 @@ def venn(
         [return_obj]
 
     """
+    try:
+        from matplotlib_venn import venn2, venn3, venn2_unweighted, venn3_unweighted
+    except ImportError:
+        raise ImportError("Extra dependencies needed, Try `pip install matplotlib-venn`")
     if ax is None:
-        _, ax = plt.subplots()
+        _, ax = plt.gca()
     s = len(data)
     venn_func = None
     patch_order = None

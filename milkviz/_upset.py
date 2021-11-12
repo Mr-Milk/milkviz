@@ -3,8 +3,6 @@ from typing import Optional, List, Any
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from upsetplot import UpSet
-from upsetplot import from_contents
 
 from milkviz.utils import doc
 
@@ -44,8 +42,14 @@ def upset(
         A `matplotlib.figure.Figure` object
 
     """
+    try:
+        from upsetplot import UpSet
+        from upsetplot import from_contents
+    except ImportError:
+        raise ImportError("Extra dependencies needed, Try `pip install UpSetPlot`")
+
     if fig is None:
-        fig = plt.figure()
+        fig = plt.gcf()
     params = dict(
         orientation="vertical" if orient == "h" else "horizontal",
         min_subset_size=min_subset_size,

@@ -53,7 +53,7 @@ def bubble(data: Optional[pd.DataFrame] = None,
         raise ValueError("size must be provided")
 
     if ax is None:
-        _, ax = plt.subplots()
+        _, ax = plt.gca()
 
     circ_size = norm_arr(size, sizes)
     bubbles = plt.scatter(x, y, s=circ_size, c=hue, cmap=cmap)

@@ -16,6 +16,7 @@ PARAMETERS_DOCSTRINGS = dict(
     types="The types array that tells the types",
     values="The values array that tells the values",
     sizes="The size range of circle markers, (min, max)",
+    size_dtype="The data type of size array",
     no_spines="If True, will turn off the frame of the plot",
     no_ticks="If True, will turn off both major and minor ticks",
     legend_title="The title of legend",

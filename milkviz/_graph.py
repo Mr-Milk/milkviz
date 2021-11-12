@@ -1,7 +1,6 @@
 from typing import List, Any, Tuple, Optional, Union
 
 import matplotlib as mpl
-import networkx as nx
 import numpy as np
 from matplotlib import cm
 from matplotlib import pyplot as plt
@@ -12,6 +11,7 @@ from milkviz.utils import norm_arr, set_spines, set_cbar, doc
 
 @doc
 def graph(
+        nodes: List,
         edges: List[Tuple[Any, Any]],
         nodes_size: Optional[List[float]] = None,
         nodes_color: Union[List[float], List[str], str, None] = "#69B0AC",
@@ -36,6 +36,7 @@ def graph(
     """Graph layout
 
     Args:
+        nodes: The graph nodes, a list of nodes
         edges: The graph data, a list of (source, target)
         nodes_size: [size]
         nodes_color: [hue]
@@ -66,9 +67,16 @@ def graph(
         [return_obj]
 
     """
-    G = nx.Graph(edges)
+    try:
+        import networkx as nx
+    except ImportError:
+        raise ImportError("Extra dependencies needed, Try `pip install networkx`")
+
+    G = nx.Graph()
+    G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
     if ax is None:
-        _, ax = plt.subplots()
+        _, ax = plt.gca()
 
     if layout == "bipartite_layout":
         pos = getattr(nx.drawing.layout, layout).__call__(G, [e[0] for e in edges])

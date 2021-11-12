@@ -1,4 +1,4 @@
-from typing import Optional, List, Union, Tuple
+from typing import Optional, List, Union, Tuple, Any
 
 import matplotlib as mpl
 import matplotlib.axes
@@ -56,6 +56,7 @@ def dot(
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         sizes: Tuple[int, int] = (1, 500),
+        size_dtype: Any = None,
         legend_title: str = "size",
         no_spines: bool = True,
         no_ticks: bool = True,
@@ -71,6 +72,7 @@ def dot(
         xlabel: [xlabel]
         ylabel: [ylabel]
         sizes: [sizes]
+        size_dtype: [size_dtype]
         legend_title: [size_legend_title]
         no_spines: [no_spines]
         no_ticks: [no_ticks]
@@ -99,6 +101,6 @@ def dot(
     circ_size = norm_arr(dot_size, sizes)
     _ = plt.scatter(xcoord, ycoord, s=circ_size, c=circ_colors)
     # adding dot size legend
-    set_size_legend(ax, dot_size, circ_size, (1.05, 0, 1, 1), legend_title)
+    set_size_legend(ax, dot_size, circ_size, (1.05, 0, 1, 1), legend_title, dtype=size_dtype)
     ax.grid(False)
     return ax
