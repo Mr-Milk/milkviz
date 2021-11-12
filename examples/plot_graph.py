@@ -13,7 +13,12 @@ import milkviz as mv
 # First let's create some random data
 # -------------------------------------
 #
-edges = [("Apple", "Banana"), ("Banana", "Grape"), ("Grape", "Pineapple"), ("Banana", "Pineapple"), ("Banana", "Orange"), ("Grape", "Orange")]
+nodes = ["Apple", "Banana", "Grape", "Pineapple", "Orange"]
+
+edges = [("Apple", "Banana"), ("Banana", "Grape"),
+         ("Grape", "Pineapple"), ("Banana", "Pineapple"),
+         ("Banana", "Orange"), ("Grape", "Orange")]
+
 nodes_size = np.random.randint(0, 100, 5).tolist()
 edges_width = np.random.randint(0, 100, 6).tolist()
 nodes_color = np.random.randint(0, 100, 5).tolist()
