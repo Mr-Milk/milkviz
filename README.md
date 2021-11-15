@@ -15,21 +15,25 @@ But not available out there.
 <tr>
 
   <td>
+    
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_point_map_cat.html">
-  <img alt="point_map" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_point_map_cat_thumb.png" height="150" width="200"/>
-  </a>
+  <img alt="point_map" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_point_map_cat_thumb.png" height="60" width="80"/>
+    <p align="center">Point Map</p>  
+</a>
   </td>
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_stacked_bar.html">
-  <img alt="stacked_bar" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_stacked_bar_thumb.png" height="150" width="200"/>
-  </a>
+  <img alt="stacked_bar" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_stacked_bar_thumb.png" height="60" width="80"/>
+<p align="center">Stacked bar</p>  
+</a>
   </td>
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_point_map_cat.html">
-  <img alt="bubble_plot" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_bubble_thumb.png" height="150" width="200"/>
-  </a>
+  <img alt="bubble_plot" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_bubble_thumb.png" height="60" width="80"/>
+<p align="center">Bubble</p>  
+</a>
   </td>
 
 </tr>
@@ -37,20 +41,23 @@ But not available out there.
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_point_map_cat.html">
-  <img alt="dot_heatmp" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_dot_heatmap_thumb.png" height="150" width="200"/>
-  </a>
+  <img alt="dot_heatmp" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_dot_heatmap_thumb.png" height="60" width="80"/>
+<p align="center">Dot heatmap</p>  
+</a>
   </td>
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_dot_heatmap_matrix_masked.html">
-  <img alt="dot_heatmap_matrix" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_dot_heatmap_matrix_masked_thumb.png" height="150" width="200"/>
-  </a>
+  <img alt="dot_heatmap_matrix" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_dot_heatmap_matrix_masked_thumb.png" height="60" width="80"/>
+<p align="center">Masked dot heatmap</p>    
+</a>
   </td>
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_dot_heatmap_matrix_masked.html">
-  <img alt="heatmap" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_anno_heatmap_thumb.png" height="150" width="200"/>
-  </a>
+  <img alt="heatmap" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_anno_heatmap_thumb.png" height="60" width="80"/>
+<p align="center">Annotated clustermap</p>    
+</a>
   </td>
 
 </tr>
@@ -59,20 +66,23 @@ But not available out there.
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_venn.html">
-  <img alt="venn" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_venn_thumb.png" height="145" width="200"/>
-  </a>
+  <img alt="venn" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_venn_thumb.png" height="60" width="80"/>
+<p align="center">Venn</p>    
+</a>
   </td>
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_upset.html">
-  <img alt="upsetplot" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_upset_thumb.png" height="150" width="220"/>
-  </a>
+  <img alt="upsetplot" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_upset_thumb.png" height="60" width="80"/>
+<p align="center">Upsetplot</p>    
+</a>
   </td>
 
   <td>
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_graph.html">
-  <img alt="graph" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_graph_thumb.png" height="150" width="200"/>
-  </a>
+  <img alt="graph" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_graph_thumb.png" height="60" width="80"/>
+<p align="center">Graph</p>    
+</a>
   </td>
 
 </tr>
