@@ -52,7 +52,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
     """
 
     if ax is None:
-        _, ax = plt.gca()
+        ax = plt.gca()
 
     if data is None:
         data = pd.DataFrame({"x": x, "y": y, "stacked": stacked})

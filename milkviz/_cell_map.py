@@ -55,7 +55,7 @@ def point_map(
 
     """
     if ax is None:
-        _, ax = plt.gca()
+        ax = plt.gca()
     if no_spines:
         set_spines(ax)
     set_ticks(ax)
@@ -142,7 +142,7 @@ def polygon_map(
         polygons = rotated_polygons
 
     if ax is None:
-        _, ax = plt.gca()
+        ax = plt.gca()
     if no_spines:
         set_spines(ax)
     set_ticks(ax)

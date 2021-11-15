@@ -76,7 +76,7 @@ def graph(
     G.add_nodes_from(nodes)
     G.add_edges_from(edges)
     if ax is None:
-        _, ax = plt.gca()
+        ax = plt.gca()
 
     if layout == "bipartite_layout":
         pos = getattr(nx.drawing.layout, layout).__call__(G, [e[0] for e in edges])

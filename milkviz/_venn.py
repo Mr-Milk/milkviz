@@ -59,7 +59,7 @@ def venn(
     except ImportError:
         raise ImportError("Extra dependencies needed, Try `pip install matplotlib-venn`")
     if ax is None:
-        _, ax = plt.gca()
+        ax = plt.gca()
     s = len(data)
     venn_func = None
     patch_order = None

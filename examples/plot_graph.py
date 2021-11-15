@@ -29,4 +29,8 @@ edges_color = np.random.randint(0, 100, 6).tolist()
 # Create the graph
 # ----------------------------
 #
-mv.graph(edges, nodes_size=nodes_size, edges_width=edges_width, nodes_color=nodes_color, edges_color=edges_color)
+mv.graph(nodes, edges,
+         nodes_size=nodes_size,
+         edges_width=edges_width,
+         nodes_color=nodes_color,
+         edges_color=edges_color)
