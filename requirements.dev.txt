@@ -4,6 +4,8 @@ matplotlib~=3.4.2
 seaborn~=0.11.2
 natsort~=7.1.1
 networkx
+matplotlib-venn
+UpSetPlot
 
 # doc
 sphinx
