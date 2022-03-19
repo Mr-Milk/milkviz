@@ -29,7 +29,7 @@ def generate_polygon():
 
 
 polygons = [generate_polygon() for _ in range(100)]
-types = np.random.choice(list("abcdefghijklmnopqrstux"), 100)
+types = np.random.choice(list("abcdef"), 100)
 values = np.random.randint(0, 100, (100))
 
 # %%

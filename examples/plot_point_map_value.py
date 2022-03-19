@@ -13,9 +13,9 @@ import milkviz as mv
 # First let's create some random data
 # -------------------------------------
 #
-x = np.random.randint(0, 100, (100))
-y = np.random.randint(0, 100, (100))
-values = np.random.randint(0, 100, (100))
+x = np.random.randint(0, 100, 1000)
+y = np.random.randint(0, 100, 1000)
+values = np.random.randint(0, 100, 1000)
 
 
 # %%
