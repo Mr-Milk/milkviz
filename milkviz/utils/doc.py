@@ -19,6 +19,7 @@ PARAMETERS_DOCSTRINGS = dict(
     size_dtype="The data type of size array",
     no_spines="If True, will turn off the frame of the plot",
     no_ticks="If True, will turn off both major and minor ticks",
+    legend="If True, show legend",
     legend_title="The title of legend",
     size_legend_title="The title of size legend",
     cbar_title="The title of colorbar",

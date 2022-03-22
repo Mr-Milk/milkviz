@@ -26,6 +26,7 @@ def point_map(
         vmax: Optional[float] = None,
         colors: Optional[List[Any]] = None,
         cmap: Union[str, Colormap] = None,
+        legend: bool = True,
         legend_title: Optional[str] = None,
         rotate: Optional[int] = None,
         markersize: Optional[int] = 5,
@@ -45,6 +46,7 @@ def point_map(
         links: The links between points, should be a list of (point_index_1, point_index_2)
         colors: [hue]
         cmap: [cmap]
+        legend: [legend]
         legend_title: [legend_title]
         rotate: The degree to rotate the whole plot according to origin
         markersize: The size of marker
@@ -89,7 +91,8 @@ def point_map(
             color_array = [cmapper[t] for t in types]
 
         ax.scatter(x=x, y=y, c=color_array, s=markersize)
-        set_category_legend(ax, cmapper, (1.05, 0, 1, 1), legend_title)
+        if legend:
+            set_category_legend(ax, cmapper, (1.05, 0, 1, 1), legend_title)
     else:
         if values is not None:
             cmap = "OrRd" if cmap is None else cmap
@@ -101,13 +104,15 @@ def point_map(
             p = ax.scatter(x=x, y=y, c=values, s=markersize, cmap=cmap)
             cmin = np.nanmin(values)
             cmax = np.nanmax(values)
-            set_cbar(ax, p, (1.07, 0, 0.1, 0.3), legend_title, cmin, cmax)
+            if legend:
+                set_cbar(ax, p, (1.07, 0, 0.1, 0.3), legend_title, cmin, cmax)
         else:
             ax.scatter(x=x, y=y, s=markersize)
 
     return ax
 
 
+@doc
 def point_map3d(
         x: Union[List[float], np.ndarray],
         y: Union[List[float], np.ndarray],
@@ -119,6 +124,7 @@ def point_map3d(
         vmax: Optional[float] = None,
         colors: Optional[List[Any]] = None,
         cmap: Union[str, Colormap] = None,
+        legend: bool = True,
         legend_title: Optional[str] = None,
         markersize: Optional[int] = 5,
         ax: Optional[mpl.axes.Axes] = None,
@@ -134,6 +140,7 @@ def point_map3d(
             values: [values] of points
             colors: [hue]
             cmap: [cmap]
+            legend: [legend]
             legend_title: [legend_title]
             markersize: The size of marker
             ax: [ax]
@@ -168,7 +175,8 @@ def point_map3d(
             color_array = [cmapper[t] for t in types]
 
         ax.scatter(x, y, z, c=color_array, s=markersize)
-        set_category_legend(ax, cmapper, (1.2, -0.1, 1, 1), legend_title)
+        if legend:
+            set_category_legend(ax, cmapper, (1.2, -0.1, 1, 1), legend_title)
     else:
         if values is not None:
             cmap = "OrRd" if cmap is None else cmap
@@ -180,7 +188,8 @@ def point_map3d(
             p = ax.scatter(x, y, z, c=values, s=markersize, cmap=cmap)
             cmin = np.nanmin(values)
             cmax = np.nanmax(values)
-            set_cbar(ax, p, (1.2, 0.05, 0.1, 0.3), legend_title, cmin, cmax)
+            if legend:
+                set_cbar(ax, p, (1.2, 0.05, 0.1, 0.3), legend_title, cmin, cmax)
         else:
             ax.scatter(x, y, z, s=markersize)
 
@@ -197,6 +206,7 @@ def polygon_map(
         values: Union[List[float], np.ndarray, None] = None,
         colors: Optional[List[Any]] = None,
         cmap: Union[str, Colormap] = None,
+        legend: bool = True,
         legend_title: Optional[str] = None,
         rotate: Optional[int] = None,
         no_spines: bool = True,
@@ -210,6 +220,7 @@ def polygon_map(
         values: [values] of polygons
         colors: [hue]
         cmap: [cmap]
+        legend: [legend]
         legend_title: [legend_title]
         rotate: The degree to rotate the whole plot according to origin
         no_spines: [no_spines]
@@ -256,7 +267,8 @@ def polygon_map(
         patches = [mpatches.Polygon(polygon) for polygon in polygons]
         patches_collections = PatchCollection(patches, facecolors=[cmapper[t] for t in types])
         ax.add_collection(patches_collections)
-        set_category_legend(ax, cmapper, (1.05, 0, 1, 1), legend_title)
+        if legend:
+            set_category_legend(ax, cmapper, (1.05, 0, 1, 1), legend_title)
     else:
         if values is not None:
             cmap = "OrRd" if cmap is None else cmap
@@ -270,7 +282,8 @@ def polygon_map(
             ax.add_collection(patches_collections)
             cmin = np.nanmin(values)
             cmax = np.nanmax(values)
-            set_cbar(ax, patches_collections, (1.07, 0, 0.1, 0.3), legend_title, cmin, cmax)
+            if legend:
+                set_cbar(ax, patches_collections, (1.07, 0, 0.1, 0.3), legend_title, cmin, cmax)
         else:
             patches = [mpatches.Polygon(polygon) for polygon in polygons]
             patches_collections = PatchCollection(patches)
