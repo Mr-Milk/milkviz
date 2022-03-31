@@ -9,7 +9,8 @@ from matplotlib.collections import PatchCollection
 from matplotlib.colors import Colormap
 
 from milkviz._dot import set_dot_grid
-from milkviz.utils import doc, norm_arr, set_cbar, set_size_legend
+from milkviz.types import Pos, Size
+from milkviz.utils import doc, norm_arr, set_cbar, set_size_legend, set_circle_cbar, set_default
 
 
 @doc
@@ -21,17 +22,20 @@ def dot_heatmap(
         yticklabels: Optional[List[str]] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
-        sizes: Tuple[int, int] = (1, 500),
-        size_dtype: Any = None,
-        dot_cmap: Union[str, Colormap, None] = "RdBu",
-        matrix_cmap: Union[str, Colormap, None] = "YlGn",
-        size_legend_title: str = "Dot size",
-        hue_cbar_title: str = "Dot hue",
+        sizes: Tuple[int, int] = (10, 250),
+        dtype: Any = None,
+        dot_cmap: Union[str, Colormap, None] = None,
+        matrix_cmap: Union[str, Colormap, None] = None,
+        legend_title: Optional[str] = None,
+        legend_pos: Pos = None,
+        hue_cbar_title: Optional[str] = None,
         hue_cbar_ticklabels: Optional[List[str]] = None,
-        hue_cbar_pos: Optional[Tuple] = None,
-        matrix_cbar_title: str = "Matrix",
+        hue_cbar_pos: Pos = None,
+        hue_cbar_size: Size = None,
+        matrix_cbar_title: Optional[str] = None,
         matrix_cbar_ticklabels: Optional[List[str]] = None,
         matrix_cbar_pos: Optional[Tuple] = None,
+        matrix_cbar_size: Size = None,
         no_spines: bool = True,
         no_ticks: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
@@ -47,16 +51,19 @@ def dot_heatmap(
         xlabel: [xlabel]
         ylabel: [ylabel]
         sizes: [sizes]
-        size_dtype: [size_dtype]
-        dot_cmap: The colormap for dot
-        matrix_cmap: The colormap for matrix
-        size_legend_title: [size_legend_title]
+        dtype: [dtype]
+        dot_cmap: The colormap for dot, default: "RdBu"
+        matrix_cmap: The colormap for matrix, default: "YlGn"
+        legend_title: [legend_title]
+        legend_pos: [legend_pos]
         hue_cbar_title: [cbar_title] of dot hue
         matrix_cbar_title: [cbar_title] of matrix hue
         hue_cbar_pos: Default is (1.07, 0, 0.1, 0.3)
         matrix_cbar_pos: Default is (1.27, 0, 0.1, 0.3)
-        hue_cbar_ticklabels: Text to put on ticks of dot hue colorbar
+        hue_cbar_ticklabels: Text to put on ticks of dot hue colorbar, notice that it can only display two labels
         matrix_cbar_ticklabels: Text to put on ticks of matrix hue colorbar
+        hue_cbar_size: [cbar_size]
+        matrix_cbar_size: [cbar_size]
         no_spines: [no_spines]
         no_ticks: [no_ticks]
         ax: [ax]
@@ -65,22 +72,40 @@ def dot_heatmap(
         [return_obj]
 
     """
+    dot_cmap = set_default(dot_cmap, "RdBu")
+    matrix_cmap = set_default(matrix_cmap, "YlGn")
     ax, xcoord, ycoord = set_dot_grid(dot_size, ax=ax, xlabel=xlabel, ylabel=ylabel,
                                       xticklabels=xticklabels, yticklabels=yticklabels,
                                       no_spines=no_spines, no_ticks=no_ticks, min_side=3)
 
     circ_size = norm_arr(dot_size, sizes)
     circ_colors = dot_hue.flatten()
-    circ_cmin = np.nanmin(circ_colors)
-    circ_cmax = np.nanmax(circ_colors)
     circles = plt.scatter(xcoord, ycoord, s=circ_size, c=circ_colors, cmap=dot_cmap)
     # adding dot size legend
-    set_size_legend(ax, dot_size, circ_size, (1.05, 0, 1, 1), size_legend_title, dtype=size_dtype)
+    set_size_legend(ax, dot_size, circ_size, pos=legend_pos, title=legend_title, dtype=dtype)
 
     # adding dot colorbar
-    hue_cbar_pos = (1.07, 0, 0.1, 0.3) if hue_cbar_pos is None else hue_cbar_pos
-    matrix_cbar_pos = (1.27, 0, 0.1, 0.3) if matrix_cbar_pos is None else matrix_cbar_pos
-    set_cbar(ax, circles, hue_cbar_pos, hue_cbar_title, circ_cmin, circ_cmax, hue_cbar_ticklabels)
+    if (hue_cbar_pos is None) & (matrix_hue is None):
+        hue_cbar_pos = (1.05, 0)
+    else:
+        hue_cbar_pos = (1.05, 0.4)
+    matrix_cbar_pos = (1.05, 0) if matrix_cbar_pos is None else matrix_cbar_pos
+    if matrix_hue is None:
+        set_cbar(ax,
+                 patches=circles,
+                 c_array=circ_colors,
+                 bbox=hue_cbar_pos,
+                 size=hue_cbar_size,
+                 title=hue_cbar_title,
+                 ticklabels=hue_cbar_ticklabels,
+                 cmap=dot_cmap)
+    else:
+        set_circle_cbar(ax,
+                        c_array=circ_colors,
+                        bbox=hue_cbar_pos, size=hue_cbar_size,
+                        title=hue_cbar_title,
+                        ticklabels=hue_cbar_ticklabels,
+                        cmap=dot_cmap)
 
     if matrix_hue is not None:
         rects = [mpatches.Rectangle((rx - 0.5, ry - 0.5), 1, 1) for rx, ry in zip(xcoord, ycoord)]
@@ -92,6 +117,14 @@ def dot_heatmap(
         rects.set_zorder(-1)
         ax.add_collection(rects)
 
-        set_cbar(ax, rects, matrix_cbar_pos, matrix_cbar_title, rects_cmin, rects_cmax, matrix_cbar_ticklabels)
+        set_cbar(ax,
+                 patches=rects,
+                 c_array=rects_colors,
+                 bbox=matrix_cbar_pos,
+                 size=matrix_cbar_size,
+                 title=matrix_cbar_title,
+                 ticklabels=matrix_cbar_ticklabels,
+                 cmap=matrix_cmap
+                 )
     plt.tight_layout()
     return ax

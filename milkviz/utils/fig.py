@@ -1,13 +1,10 @@
-from typing import Union, List, Any, Optional, Dict, Tuple
+from typing import Union, List, Any, Optional, Dict
 
-import matplotlib as mpl
 import numpy as np
 from matplotlib import cm
 from matplotlib import colors as mcolors
 from matplotlib.colors import Colormap
 from matplotlib.colors import to_hex
-from matplotlib.lines import Line2D
-from natsort import natsorted
 
 Colors = Union[str, List[str], Colormap]
 
@@ -70,54 +67,6 @@ def get_render_size(ax):
     return f.get_figwidth(), f.get_figheight()
 
 
-def set_cbar(ax, patches=None, bbox=None, title=None, cmin=None, cmax=None, ticklabels=None, cmap=None):
-    axins = ax.inset_axes(bbox, transform=ax.transAxes)
-    fig = ax.get_figure()
-    if patches is not None:
-        cbar = fig.colorbar(patches, cax=axins)
-    else:
-        cbar = fig.colorbar(cm.ScalarMappable(cmap=cmap), cax=axins)
-    cbar.ax.set_title(title, size=mpl.rcParams["font.size"])
-    cbar.ax.yaxis.set_tick_params(length=0)  # hide ticks
-    if ticklabels is not None:
-        cbar.set_ticks(list(np.linspace(cmin, cmax, num=len(ticklabels))), )
-        cbar.ax.set_yticklabels(list(ticklabels))
-
-
-def set_size_legend(ax, size_arr, markersize_arr, bbox, title, dtype=None):
-    size_arr = np.asarray(size_arr, dtype=dtype).flatten()
-    legend_items = []
-    for ratio in [1.0, 0.6, 0.2]:
-        if isinstance(size_arr[0], (int, np.integer)) or (dtype == int) or (dtype == np.integer):
-            label = int(np.nanmax(size_arr) * ratio)
-        else:
-            label = round(np.nanmax(size_arr) * ratio, 2)
-        item = Line2D((), (), linestyle="none", marker="o", color="black", markerfacecolor="black",
-                      label=str(label),
-                      markersize=np.sqrt((np.nanmax(markersize_arr))) * ratio
-                      )
-        legend_items.append(item)
-    legend = ax.legend(handles=legend_items, loc="upper left", bbox_to_anchor=bbox,
-                       frameon=False, labelspacing=1.2, title=title,
-                       fontsize=mpl.rcParams["font.size"])
-    legend._legend_box.align = "left"
-    ax.add_artist(legend)
-
-
-def set_category_legend(ax, cmapper, bbox, title, marker="o", reverse=False):
-    legend_items = [Line2D((), (), marker=marker, linestyle="none", markersize=8, color=c, markerfacecolor=c, label=t)
-                    for t, c in cmapper.items()]
-    if reverse:
-        legend_items = legend_items[::-1]
-    ncol = round(len(legend_items) / 10)
-    ncol = ncol if ncol > 0 else 1
-    legend = ax.legend(handles=legend_items, loc="upper left", bbox_to_anchor=bbox,
-                       frameon=False, title=title, ncol=ncol, columnspacing=0.8,
-                       handletextpad=0.1, fontsize=mpl.rcParams["font.size"])
-    ax.add_artist(legend)
-    return ncol
-
-
 def set_spines(ax, status=(0, 0, 0, 0)):
     for spine, s in zip(ax.spines.values(), status):
         spine.set_visible(s)
@@ -168,7 +117,9 @@ def color_mapper_cat(types: Union[List[Any], np.ndarray],
         
     """
     N = len(types)
-    uni_types = natsorted(np.unique(types))
+    types = np.array(types)
+    _, idx = np.unique(types, return_index=True)
+    uni_types = types[np.sort(idx)]
     if c_array is not None:
         if len(c_array) < N:
             raise ValueError(f"The length of input color array {len(c_array)} does not match types {N}")
@@ -186,7 +137,7 @@ def color_mapper_cat(types: Union[List[Any], np.ndarray],
 
 def color_mapper_val(values: Union[List[Any], np.ndarray],
                      c_array: Optional[List[str]] = None,
-                     cmap: Optional[Colors] = None, ) -> List[Tuple]:
+                     cmap: Optional[Colors] = None, ) -> list[str]:
     if not isinstance(values, np.ndarray):
         values = np.ndarray(values)
     vmin = np.nanmin(values)

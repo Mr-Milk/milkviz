@@ -137,7 +137,10 @@ def graph(
     bbox_loc = {0: (1.07, 0, 0.1, 0.3), 1: (1.27, 0, 0.1, 0.3)}
     cbar_count = 0
     if node_cmin is not None:
-        set_cbar(ax, patches=nodes_patches, bbox=bbox_loc[cbar_count], title=node_color_legend_title,
+        set_cbar(ax,
+                 patches=nodes_patches,
+                 bbox=bbox_loc[cbar_count],
+                 title=node_color_legend_title,
                  cmin=node_cmin, cmax=node_cmax, cmap=node_cmap)
     cbar_count += 1
     if edge_cmin is not None:

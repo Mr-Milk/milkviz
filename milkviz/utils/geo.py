@@ -21,7 +21,7 @@ def rotate_points(px, py, origin, angle):
 
 def normalize(arr: np.ndarray,
               vmin: Optional[float] = None,
-              vmax:  Optional[float] = None,
+              vmax: Optional[float] = None,
               ):
     if (vmin is None) & (vmax is None):
         return arr
@@ -32,4 +32,3 @@ def normalize(arr: np.ndarray,
     vmin = 0 if vmin is None else vmin
     vmax = 1 if vmax is None else vmax
     return narr * (vmax - vmin) + vmin
-

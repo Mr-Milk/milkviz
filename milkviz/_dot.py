@@ -5,7 +5,8 @@ import matplotlib.axes
 import matplotlib.pyplot as plt
 import numpy as np
 
-from milkviz.utils import adaptive_figsize, norm_arr, doc, set_size_legend, set_spines, set_ticks
+from milkviz.types import Pos
+from milkviz.utils import norm_arr, doc, set_size_legend, set_spines, set_ticks
 
 
 def set_dot_grid(data,
@@ -16,7 +17,7 @@ def set_dot_grid(data,
                  yticklabels=None,
                  no_spines=True,
                  no_ticks=True,
-                 min_side=4,
+                 min_side=5,
                  ):
     Y, X = data.shape
     x, y = np.meshgrid(np.arange(X), np.arange(Y))  # Get the coordinates
@@ -24,8 +25,8 @@ def set_dot_grid(data,
     ycoord = y.flatten()
 
     if ax is None:
-        ratio = 0.6
-        figsize = adaptive_figsize((X * ratio, Y * ratio), min_side=min_side)
+        figsize = (0.3 * X + 2, 0.3 * Y + 1)
+        print(figsize)
         _, ax = plt.subplots(figsize=figsize)
     if no_spines:
         set_spines(ax)
@@ -55,9 +56,10 @@ def dot(
         yticklabels: Optional[List[str]] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
-        sizes: Tuple[int, int] = (1, 500),
-        size_dtype: Any = None,
-        legend_title: str = "size",
+        sizes: Tuple[int, int] = (10, 250),
+        dtype: Any = None,
+        legend_title: Optional[str] = None,
+        legend_pos: Pos = None,
         no_spines: bool = True,
         no_ticks: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
@@ -72,8 +74,9 @@ def dot(
         xlabel: [xlabel]
         ylabel: [ylabel]
         sizes: [sizes]
-        size_dtype: [size_dtype]
-        legend_title: [size_legend_title]
+        dtype: [dtype]
+        legend_title: [legend_title]
+        legend_pos: [legend_pos]
         no_spines: [no_spines]
         no_ticks: [no_ticks]
         ax: [ax]
@@ -101,6 +104,6 @@ def dot(
     circ_size = norm_arr(dot_size, sizes)
     _ = plt.scatter(xcoord, ycoord, s=circ_size, c=circ_colors)
     # adding dot size legend
-    set_size_legend(ax, dot_size, circ_size, (1.05, 0, 1, 1), legend_title, dtype=size_dtype)
+    set_size_legend(ax, dot_size, circ_size, pos=legend_pos, title=legend_title, dtype=dtype)
     ax.grid(False)
     return ax

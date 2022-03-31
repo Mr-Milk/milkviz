@@ -15,15 +15,22 @@ PARAMETERS_DOCSTRINGS = dict(
     ylabel="Title for y-axis",
     types="The types array that tells the types",
     values="The values array that tells the values",
+    vminmax="Reset the min and max of your values",
     sizes="The size range of circle markers, (min, max)",
-    size_dtype="The data type of size array",
     no_spines="If True, will turn off the frame of the plot",
     no_ticks="If True, will turn off both major and minor ticks",
     legend="If True, show legend",
     legend_title="The title of legend",
-    size_legend_title="The title of size legend",
-    cbar_title="The title of colorbar",
+    legend_pos="A 2-tuple (x, y) to set the position of legend, the origin is at the upper left",
+    legend_ncol="Number of columns the legend will have",
+    dtype="Only coerce the value display on the legend, does not affect plotting",
+
     return_obj="A `matplotlib.axes.Axes` instance",
+    cbar_title="The title of colorbar",
+    cbar_pos="A 2-tuple (x, y) or 4-tuple (x, y, frac of fig width, frac of fig height) "
+             "to place colorbar, the origin is the same as plot",
+    cbar_size="A tuple (width, height) in inches",
+    cbar_ticklabels="Set the ticklabels of colorbar"
 )
 
 

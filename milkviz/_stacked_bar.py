@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Text
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -8,8 +8,9 @@ import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
 
-from milkviz.utils import doc
-from milkviz.utils import get_cmap_colors, set_category_legend, set_spines
+from milkviz.types import Pos
+from milkviz.utils import doc, set_category_square_legend
+from milkviz.utils import get_cmap_colors, set_spines
 
 
 def fold_add(arr):
@@ -27,8 +28,11 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
                 stacked: Union[str, np.ndarray, None] = None,
                 orient: str = "v",
                 percentage: bool = False,
-                cmap: Union[str, Colormap] = "tab20",
+                cmap: Union[str, Colormap, None] = None,
                 show_values: bool = False,
+                legend_title: Text = None,
+                legend_pos: Pos = None,
+                legend_ncol: Optional[int] = None,
                 ax: Optional[mpl.axes.Axes] = None,
                 **kwargs,
                 ) -> Axes:
@@ -41,8 +45,11 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
         stacked: Which columns to plot as stacked type
         orient: "v" or "h"
         percentage: Normalize value to 1
-        cmap: [cmap]
+        cmap: [cmap], default: "echarts", a custom milkviz palette
         show_values: Whether to display values of each block
+        legend_title: [legend_title]
+        legend_pos: [legend_pos]
+        legend_ncol: [legend_ncol]
         ax: [ax]
         **kwargs: Pass to `seaborn.barplot <https://seaborn.pydata.org/generated/seaborn.barplot.html#seaborn.barplot>`_
 
@@ -50,6 +57,8 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
         [return_obj]
 
     """
+
+    cmap = "echarts" if cmap is None else cmap
 
     if ax is None:
         ax = plt.gca()
@@ -93,6 +102,11 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
                 else:
                     bar.text(text, i, text, ha="center", va="center", rotation=-90, bbox=dict(fc="white", alpha=0.7))
         legends_cmapper[n] = c
-    set_category_legend(ax, legends_cmapper, (1.05, 0, 1, 1), title=stacked, marker="s")
+    set_category_square_legend(ax,
+                               legends_cmapper,
+                               pos=legend_pos,
+                               title=stacked if legend_title is None else legend_title,
+                               ncol=legend_ncol,
+                               )
     set_spines(ax, (1, 0, 1, 0))
     return ax
