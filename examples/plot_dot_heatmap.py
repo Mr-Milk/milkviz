@@ -13,9 +13,9 @@ import milkviz as mv
 # -------------------------------------
 #
 shape = (10, 10)
-colors = np.random.randn(*shape)
-sizes = np.random.randn(*shape)
-matrix = np.random.randn(*shape)
+colors = np.random.randint(1, 100, shape)
+sizes = np.random.randint(1, 100, shape)
+matrix = np.random.randint(1, 100, shape)
 labels = ["apple", "banana", "Coconut", "Plum", "Kiwifruit",
           "Mango", "Papaya", "Persimmon", "Quince", "Soursop"]
 

@@ -13,12 +13,12 @@ from milkviz import mask_triu
 # First let's create some random data
 # -------------------------------------
 #
-shape = (10, 10)
-colors = np.random.randn(*shape)
-sizes = np.random.randn(*shape)
-matrix = np.random.randn(*shape)
-labels = ["apple", "banana", "Coconut", "Plum", "Kiwifruit",
-          "Mango", "Papaya", "Persimmon", "Quince", "Soursop"]
+shape = (15, 15)
+colors = np.random.randint(1, 100, shape)
+sizes = np.random.randint(1, 100, shape)
+matrix = np.random.randint(1, 100, shape)
+labels = ["Apple", "Avocado", "Banana", "Blueberries", "Coconut",  "Kiwifruit", "Lemon",
+          "Mango", "Olives", "Papaya", "Persimmon", "Plum", "Quince", "Soursop", "Watermelon"]
 
 
 # %%
@@ -28,5 +28,5 @@ labels = ["apple", "banana", "Coconut", "Plum", "Kiwifruit",
 #
 sizes = mask_triu(sizes)
 matrix = mask_triu(matrix)
-mv.dot_heatmap(sizes, colors, matrix, xticklabels=labels, sizes=(1, 400))
+mv.dot_heatmap(sizes, colors, matrix, xticklabels=labels)
 

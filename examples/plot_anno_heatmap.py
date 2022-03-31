@@ -27,4 +27,6 @@ df
 # Create the heatmap
 # ----------------------------
 #
-mv.anno_clustermap(df, row_colors=["species", "island", "sex"], col_label="col", z_score=0)
+mv.anno_clustermap(df, row_colors=["species", "island", "sex"],
+                   row_legend_padding=0.18,
+                   col_label="col", z_score=0)

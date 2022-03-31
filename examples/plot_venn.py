@@ -28,11 +28,30 @@ list_area = (1, 1, 1, 2, 1, 2, 2)
 
 
 # %%
-# Create the venn
+# Create venn2
+# ----------------------------
+#
+mv.venn([set([1,2,3,4]), set([4,5,6,7])])
+
+
+# %%
+# Create the venn with set
 # ----------------------------
 #
 mv.venn(list_sets, names=['A', 'B', 'C'])
+
+
+# %%
+# Create the venn with list
+# ----------------------------
+#
 mv.venn(list_list)
+
+
+# %%
+# Create the venn with area
+# ----------------------------
+#
 mv.venn(list_area)
 
 
@@ -42,9 +61,3 @@ mv.venn(list_area)
 #
 mv.venn(list_list, weighted=False)
 
-
-# %%
-# Create venn2
-# ----------------------------
-#
-mv.venn([set([1,2,3,4]), set([4,5,6,7])])

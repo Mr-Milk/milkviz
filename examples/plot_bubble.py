@@ -22,5 +22,5 @@ color = np.random.randint(3, 10, 10)
 # Create the dot heatmap
 # ----------------------------
 #
-mv.bubble(x=x, y=y, size=size, hue=color, sizes=(100, 400))
+mv.bubble(x=x, y=y, size=size, hue=color)
 
