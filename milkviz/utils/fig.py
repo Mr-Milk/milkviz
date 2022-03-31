@@ -102,7 +102,7 @@ def get_cmap_colors(color: Colors):
 
 def color_mapper_cat(types: Union[List[Any], np.ndarray],
                      c_array: Optional[List[str]] = None,
-                     cmap: Optional[Colors] = None,
+                     cmap: Colors = None,
                      ) -> Dict:
     """
     
@@ -137,7 +137,7 @@ def color_mapper_cat(types: Union[List[Any], np.ndarray],
 
 def color_mapper_val(values: Union[List[Any], np.ndarray],
                      c_array: Optional[List[str]] = None,
-                     cmap: Optional[Colors] = None, ) -> list[str]:
+                     cmap: Colors = None, ) -> list[str]:
     if not isinstance(values, np.ndarray):
         values = np.ndarray(values)
     vmin = np.nanmin(values)
