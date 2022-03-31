@@ -54,6 +54,7 @@ sphinx_gallery_conf = {
     'examples_dirs': '../examples',  # path to your example scripts
     'gallery_dirs': 'gallery_examples',  # path to where to save gallery generated output
     'image_scrapers': (matplotlib_svg_scraper(),),
+    'image_srcset': ["2x"],
 }
 
 autosummary_generate = True
