@@ -17,14 +17,14 @@ But not available out there.
   <td align="center">
     
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_point_map_cat.html">
-  <img alt="point_map" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_point_map_cat_thumb.png" height="60" width="80"/>
+  <img alt="point_map" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_point_map_value_thumb.png" height="60" width="80"/>
     <p >Point map</p>  
 </a>
   </td>
 
   <td align="center">
   <a href="https://milkviz.readthedocs.io/en/latest/gallery_examples/plot_stacked_bar.html">
-  <img alt="stacked_bar" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_stacked_bar_thumb.png" height="60" width="80"/>
+  <img alt="stacked_bar" src="https://milkviz.readthedocs.io/en/latest/_images/sphx_glr_plot_stacked_bar_thumb.png" height="65" width="80"/>
 <p>Stacked bar</p>  
 </a>
   </td>
