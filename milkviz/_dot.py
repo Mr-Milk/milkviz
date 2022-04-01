@@ -17,7 +17,6 @@ def set_dot_grid(data,
                  yticklabels=None,
                  no_spines=True,
                  no_ticks=True,
-                 min_side=5,
                  ):
     Y, X = data.shape
     x, y = np.meshgrid(np.arange(X), np.arange(Y))  # Get the coordinates
@@ -25,8 +24,7 @@ def set_dot_grid(data,
     ycoord = y.flatten()
 
     if ax is None:
-        figsize = (0.3 * X + 2, 0.3 * Y + 1)
-        print(figsize)
+        figsize = (0.4 * X + 2, 0.4 * Y + 1)
         _, ax = plt.subplots(figsize=figsize)
     if no_spines:
         set_spines(ax)
@@ -88,7 +86,7 @@ def dot(
 
     ax, xcoord, ycoord = set_dot_grid(dot_size, ax=ax, xlabel=xlabel, ylabel=ylabel,
                                       xticklabels=xticklabels, yticklabels=yticklabels,
-                                      no_spines=no_spines, no_ticks=no_ticks, min_side=3)
+                                      no_spines=no_spines, no_ticks=no_ticks)
 
     if dot_hue is not None:
         if isinstance(dot_hue, str):

@@ -76,7 +76,7 @@ def dot_heatmap(
     matrix_cmap = set_default(matrix_cmap, "YlGn")
     ax, xcoord, ycoord = set_dot_grid(dot_size, ax=ax, xlabel=xlabel, ylabel=ylabel,
                                       xticklabels=xticklabels, yticklabels=yticklabels,
-                                      no_spines=no_spines, no_ticks=no_ticks, min_side=3)
+                                      no_spines=no_spines, no_ticks=no_ticks)
 
     circ_size = norm_arr(dot_size, sizes)
     circ_colors = dot_hue.flatten()
@@ -87,7 +87,7 @@ def dot_heatmap(
     # adding dot colorbar
     if (hue_cbar_pos is None) & (matrix_hue is None):
         hue_cbar_pos = (1.05, 0)
-    else:
+    elif hue_cbar_pos is None:
         hue_cbar_pos = (1.05, 0.4)
     matrix_cbar_pos = (1.05, 0) if matrix_cbar_pos is None else matrix_cbar_pos
     if matrix_hue is None:
