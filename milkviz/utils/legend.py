@@ -164,7 +164,7 @@ def set_size_legend(ax,
     s_max = np.nanmax(size_arr)
     size_incr = s_max - s_min
 
-    for ratio, text in zip([1.0, 0.75, 0.5, 0.25, 0], ["100%", "75%", "50%", "25%", "0%"]):
+    for ratio, text in zip([1.0, 0.8, 0.6, 0.4, 0.2], ["100%", "80%", "60%", "40%", "20%"]):
         label = parse_label(s_min + size_incr * ratio, dtype=dtype)
         item = CircleCollection([m_min + marker_incr * ratio], label=f"{label} - {text}", facecolors="#1C1C1C")
         legend_items.append(item)
@@ -190,7 +190,7 @@ def set_category_legend(ax, cmapper, bbox, title, ncol=None, marker="o", markers
     if reverse:
         legend_items = legend_items[::-1]
     if ncol is None:
-        ncol = int(len(legend_items) / 8)
+        ncol = int(len(legend_items) / 6)
         ncol = ncol if ncol > 0 else 1
     legend = ax.legend(handles=legend_items,
                        bbox_to_anchor=bbox,
@@ -219,7 +219,7 @@ def set_category_circle_legend(ax,
     if reverse:
         legend_items = legend_items[::-1]
     if ncol is None:
-        ncol = int(len(legend_items) / 8)
+        ncol = int(len(legend_items) / 6)
         ncol = ncol if ncol > 0 else 1
     legend = ax.legend(handles=legend_items,
                        handlelength=1,
@@ -247,7 +247,7 @@ def set_category_square_legend(ax,
     if reverse:
         legend_items = legend_items[::-1]
     if ncol is None:
-        ncol = int(len(legend_items) / 8)
+        ncol = int(len(legend_items) / 6)
         ncol = ncol if ncol > 0 else 1
     legend = ax.legend(handles=legend_items,
                        handlelength=1.2,

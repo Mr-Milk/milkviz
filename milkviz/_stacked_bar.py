@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from itertools import cycle
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
 
@@ -92,7 +93,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
     colors = get_cmap_colors(cmap)
     # This reverse step is to make the stacked column in the right order
     legends_cmapper = {}
-    for (n, g), c in zip(data_g.iloc[::-1, :].groupby(stacked, sort=False), colors):
+    for (n, g), c in zip(data_g.iloc[::-1, :].groupby(stacked, sort=False), cycle(colors)):
         bar = sns.barplot(x=x, y=y, data=g, ax=ax, color=c, orient=orient, ci=None, **kwargs)
         if show_values:
             for i in range(len(g)):
