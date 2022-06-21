@@ -9,6 +9,8 @@ from matplotlib.collections import PatchCollection, LineCollection
 from matplotlib.colors import Colormap
 from mpl_toolkits.mplot3d import Axes3D
 
+from legendkit import CatLegend, Colorbar
+
 from milkviz.types import OneDimNum, Colors, Pos, Size
 from milkviz.utils import set_cbar, set_ticks, set_spines, \
     color_mapper_cat, rotate_points, color_mapper_val, doc, create_cmap, normalize, \
@@ -33,13 +35,8 @@ def point_map(
         linewidth: int = 1,
         no_spines: bool = True,
         legend: bool = True,
-        legend_title: Optional[str] = None,
-        legend_pos: Pos = None,
-        legend_ncol: Optional[int] = None,
-        cbar_title: Optional[str] = None,
-        cbar_pos: Pos = None,
-        cbar_size: Size = None,
-        cbar_ticklabels: Optional[List[str]] = None,
+        legend_kw: Dict = None,
+        cbar_kw: Dict = None,
         ax: Optional[mpl.axes.Axes] = None,
 ):
     """Point map
@@ -60,13 +57,8 @@ def point_map(
         linewidth: The width of lines
         no_spines: [no_spines]
         legend: [legend]
-        legend_title: [legend_title]
-        legend_pos: [legend_pos]
-        legend_ncol: [legend_ncol]
-        cbar_title: [cbar_title]
-        cbar_pos: [cbar_pos]
-        cbar_size: [cbar_size]
-        cbar_ticklabels: [cbar_ticklabels]
+        legend_kw: [legend_kw]
+        cbar_kw: [cbar_kw]
         ax: [ax]
 
     Returns:
@@ -93,7 +85,7 @@ def point_map(
         ax.add_collection(line_collections)
 
     if types is not None:
-        cmap = set_default(cmap, "tab20")
+        cmap = set_default(cmap, "echarts")
         cmapper = types_colors
         color_array = None if cmapper is None else [cmapper[t] for t in types]
         if cmapper is None:
@@ -105,8 +97,19 @@ def point_map(
 
         ax.scatter(x=x, y=y, c=color_array, s=markersize)
         if legend:
-            legend_pos = set_default(legend_pos, (1.05, 0))
-            set_category_circle_legend(ax, cmapper, pos=legend_pos, title=legend_title, ncol=legend_ncol)
+            colors, labels = [], []
+            for l, c in cmapper.items():
+                colors.append(c)
+                labels.append(l)
+            if legend_kw is None:
+                legend_kw = {}
+            legend_kw = dict(
+                bbox_to_anchor=(1.05, 0.5),
+                bbox_transform=ax.transAxes,
+                loc="center left",
+                **legend_kw,
+            )
+            CatLegend(colors, labels, handle="circle", **legend_kw)
     else:
         if values is not None:
             cmap = set_default(cmap, "OrRd")
@@ -116,14 +119,17 @@ def point_map(
                 cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
             p = ax.scatter(x=x, y=y, c=values, s=markersize, cmap=cmap)
             if legend:
-                set_cbar(ax,
-                         patches=p,
-                         c_array=values,
-                         bbox=cbar_pos,
-                         size=cbar_size,
-                         title=cbar_title,
-                         ticklabels=cbar_ticklabels,
-                         )
+                cmin = np.nanmin(values)
+                cmax = np.nanmax(values)
+                if cbar_kw is None:
+                    cbar_kw = {}
+                cbar_kw = dict(
+                    bbox_to_anchor=(1.05, 0.5),
+                    bbox_transform=ax.transAxes,
+                    loc="center left",
+                    **cbar_kw
+                )
+                Colorbar(vmin=cmin, vmax=cmax, cmap=cmap, **cbar_kw)
         else:
             ax.scatter(x=x, y=y, s=markersize)
 
