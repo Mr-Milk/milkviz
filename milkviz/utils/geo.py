@@ -29,6 +29,6 @@ def normalize(arr: np.ndarray,
     amin = np.amin(arr)
     amax = np.amax(arr)
     narr = (arr - amin) / (amax - amin)
-    vmin = 0 if vmin is None else vmin
-    vmax = 1 if vmax is None else vmax
+    vmin = amin if vmin is None else vmin
+    vmax = amax if vmax is None else vmax
     return narr * (vmax - vmin) + vmin

@@ -17,6 +17,38 @@ from milkviz.utils import set_cbar, set_ticks, set_spines, \
     set_category_circle_legend, set_default
 
 
+def _init_canvas(ax):
+    """For map function only, clear all axis"""
+    set_ticks(ax)
+    ax.set_aspect("equal")
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+
+
+def _set_cat_legend(cmapper, ax, legend_kw):
+    colors, labels = [], []
+    for l, c in cmapper.items():
+        colors.append(c)
+        labels.append(l)
+    if legend_kw is None:
+        legend_kw = {}
+    legend_kw = dict(
+        bbox_to_anchor=(1.05, 0.5),
+        bbox_transform=ax.transAxes,
+        loc="center left",
+        **legend_kw,
+    )
+    CatLegend(colors, labels, handle="circle", ax=ax, **legend_kw)
+
+
+def _set_cbar(values, cmap, ax, cbar_kw):
+    cmin = np.nanmin(values)
+    cmax = np.nanmax(values)
+    if cbar_kw is None:
+        cbar_kw = {}
+    Colorbar(vmin=cmin, vmax=cmax, cmap=cmap, ax=ax, **cbar_kw)
+
+
 @doc
 def point_map(
         x: OneDimNum,
@@ -69,10 +101,9 @@ def point_map(
         ax = plt.gca()
     if no_spines:
         set_spines(ax)
-    set_ticks(ax)
-    ax.set_aspect("equal")
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
+
+    _init_canvas(ax)
+
     if rotate is not None:
         x, y = rotate_points(x, y, (0, 0), rotate)
 
@@ -97,19 +128,7 @@ def point_map(
 
         ax.scatter(x=x, y=y, c=color_array, s=markersize)
         if legend:
-            colors, labels = [], []
-            for l, c in cmapper.items():
-                colors.append(c)
-                labels.append(l)
-            if legend_kw is None:
-                legend_kw = {}
-            legend_kw = dict(
-                bbox_to_anchor=(1.05, 0.5),
-                bbox_transform=ax.transAxes,
-                loc="center left",
-                **legend_kw,
-            )
-            CatLegend(colors, labels, handle="circle", **legend_kw)
+            _set_cat_legend(cmapper, ax, legend_kw)
     else:
         if values is not None:
             cmap = set_default(cmap, "OrRd")
@@ -117,19 +136,9 @@ def point_map(
             if colors is not None:
                 vc_mapper = dict(zip(values, colors))
                 cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
-            p = ax.scatter(x=x, y=y, c=values, s=markersize, cmap=cmap)
+            ax.scatter(x=x, y=y, c=values, s=markersize, cmap=cmap)
             if legend:
-                cmin = np.nanmin(values)
-                cmax = np.nanmax(values)
-                if cbar_kw is None:
-                    cbar_kw = {}
-                cbar_kw = dict(
-                    bbox_to_anchor=(1.05, 0.5),
-                    bbox_transform=ax.transAxes,
-                    loc="center left",
-                    **cbar_kw
-                )
-                Colorbar(vmin=cmin, vmax=cmax, cmap=cmap, **cbar_kw)
+                _set_cbar(values, cmap, ax, cbar_kw)
         else:
             ax.scatter(x=x, y=y, s=markersize)
 
@@ -149,13 +158,8 @@ def point_map3d(
         colors: Optional[List[Any]] = None,
         cmap: Union[str, Colormap] = None,
         legend: bool = True,
-        legend_title: Optional[str] = None,
-        legend_pos: Pos = None,
-        legend_ncol: Optional[int] = None,
-        cbar_title: Optional[str] = None,
-        cbar_pos: Pos = None,
-        cbar_size: Size = None,
-        cbar_ticklabels: Optional[List[str]] = None,
+        legend_kw: Dict = None,
+        cbar_kw: Dict = None,
         markersize: Optional[int] = 5,
         ax: Optional[mpl.axes.Axes] = None,
 ):
@@ -172,13 +176,8 @@ def point_map3d(
             colors: [hue]
             cmap: [cmap]
             legend: [legend]
-            legend_title: [legend_title]
-            legend_pos: [legend_pos]
-            legend_ncol: [legend_ncol]
-            cbar_title: [cbar_title]
-            cbar_pos: [cbar_pos]
-            cbar_size: [cbar_size]
-            cbar_ticklabels: [cbar_ticklabels]
+            legend_kw: [legend_kw]
+            cbar_kw: [cbar_kw]
             markersize: The size of marker
             ax: [ax]
 
@@ -212,8 +211,8 @@ def point_map3d(
 
         ax.scatter(x, y, z, c=color_array, s=markersize)
         if legend:
-            legend_pos = set_default(legend_pos, (1.2, -0.1))
-            set_category_circle_legend(ax, cmapper, pos=legend_pos, title=legend_title, ncol=legend_ncol)
+            # bbox: 1.2, -0.1
+            _set_cat_legend(cmapper, ax, legend_kw)
     else:
         if values is not None:
             cmap = set_default(cmap, "OrRd")
@@ -223,15 +222,8 @@ def point_map3d(
                 cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
             p = ax.scatter(x, y, z, c=values, s=markersize, cmap=cmap)
             if legend:
-                cbar_pos = set_default(cbar_pos, (1.2, 0.05))
-                set_cbar(ax,
-                         patches=p,
-                         c_array=values,
-                         bbox=cbar_pos,
-                         size=cbar_size,
-                         title=cbar_title,
-                         ticklabels=cbar_ticklabels,
-                         )
+                # pos: 1.2, 0.05
+                _set_cbar(values, cmap, ax, cbar_kw)
         else:
             ax.scatter(x, y, z, s=markersize)
 
@@ -248,13 +240,8 @@ def polygon_map(
         colors: Optional[List[Any]] = None,
         cmap: Union[str, Colormap] = None,
         legend: bool = True,
-        legend_title: Optional[str] = None,
-        legend_pos: Pos = None,
-        legend_ncol: Optional[int] = None,
-        cbar_title: Optional[str] = None,
-        cbar_pos: Pos = None,
-        cbar_size: Size = None,
-        cbar_ticklabels: Optional[List[str]] = None,
+        legend_kw: Dict = None,
+        cbar_kw: Dict = None,
         rotate: Optional[int] = None,
         no_spines: bool = True,
         ax: Optional[mpl.axes.Axes] = None,
@@ -269,13 +256,8 @@ def polygon_map(
         colors: [hue]
         cmap: [cmap]
         legend: [legend]
-        legend_title: [legend_title]
-        legend_pos: [legend_pos]
-        legend_ncol: [legend_ncol]
-        cbar_title: [cbar_title]
-        cbar_pos: [cbar_pos]
-        cbar_size: [cbar_size]
-        cbar_ticklabels: [cbar_ticklabels]
+        legend_kw: [legend_kw]
+        cbar_kw: [cbar_kw]
         rotate: The degree to rotate the whole plot according to origin
         no_spines: [no_spines]
         ax: [ax]
@@ -300,10 +282,9 @@ def polygon_map(
         ax = plt.gca()
     if no_spines:
         set_spines(ax)
-    set_ticks(ax)
-    ax.set_aspect("equal")
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
+
+    _init_canvas(ax)
+    
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
@@ -317,8 +298,7 @@ def polygon_map(
         patches_collections = PatchCollection(patches, facecolors=[cmapper[t] for t in types])
         ax.add_collection(patches_collections)
         if legend:
-            legend_pos = set_default(legend_pos, (1.05, 0))
-            set_category_circle_legend(ax, cmapper, pos=legend_pos, title=legend_title, ncol=legend_ncol)
+            _set_cat_legend(cmapper, ax, legend_kw)
     else:
         if values is not None:
             cmap = set_default(cmap, "OrRd")
@@ -331,14 +311,7 @@ def polygon_map(
             patches_collections = PatchCollection(patches, facecolors=colors, cmap=cmap)
             ax.add_collection(patches_collections)
             if legend:
-                set_cbar(ax,
-                         patches=patches_collections,
-                         c_array=values,
-                         bbox=cbar_pos,
-                         size=cbar_size,
-                         title=cbar_title,
-                         ticklabels=cbar_ticklabels,
-                         )
+                _set_cbar(values, cmap, cbar_kw)
         else:
             patches = [mpatches.Polygon(polygon) for polygon in polygons]
             patches_collections = PatchCollection(patches)
