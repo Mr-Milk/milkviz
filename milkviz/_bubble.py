@@ -1,31 +1,29 @@
-from typing import Optional, List, Tuple, Any
+from __future__ import annotations
+
+from typing import Optional, List, Tuple, Any, Dict
 
 import matplotlib as mpl
 import matplotlib.axes
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
-from milkviz.types import OneDimAny, Colors, Pos, Text, Size
-from milkviz.utils import norm_arr, doc, set_default
-from milkviz.utils import set_size_legend, set_cbar
+from legendkit import SizeLegend, Colorbar
+from milkviz.utils import norm_arr, doc, set_default, set_spines
 
 
 @doc
 def bubble(data: Optional[pd.DataFrame] = None,
-           x: OneDimAny = None,
-           y: OneDimAny = None,
-           hue: OneDimAny = None,
-           size: OneDimAny = None,
-           cmap: Colors = None,
+           x: str | List | np.ndarray = None,
+           y: str | List | np.ndarray = None,
+           hue: str | List | np.ndarray = None,
+           size: str | List | np.ndarray = None,
+           cmap: Any = None,
            sizes: Tuple[int, int] = (10, 250),
-           legend_title: Optional[str] = None,
-           legend_pos: Pos = None,
            dtype: Any = None,
-           cbar_title: Text = None,
-           cbar_ticklabels: Optional[List[str]] = None,
-           cbar_pos: Pos = None,
-           cbar_size: Size = None,
-           ax: Optional[mpl.axes.Axes] = None,
+           legend_kw: Dict = None,
+           cbar_kw: Dict = None,
+           ax: mpl.axes.Axes = None,
            ) -> mpl.axes.Axes:
     """Bubble plot
 
@@ -37,13 +35,9 @@ def bubble(data: Optional[pd.DataFrame] = None,
         size: [size]
         cmap: [cmap], default to "RdBu"
         sizes: [sizes]
-        legend_title: [size_legend_title]
-        legend_pos: [legend_pos]
         dtype: [dtype]
-        cbar_title: [cbar_title]
-        cbar_ticklabels: Overwrite the ticklabels on colorbar
-        cbar_pos: [cbar_pos]
-        cbar_size: [cbar_size]
+        legend_kw: The options to configure legend
+        cbar_kw: The options to configure colorbar
         ax: [ax]
 
     Returns:
@@ -52,6 +46,8 @@ def bubble(data: Optional[pd.DataFrame] = None,
     """
     cmap = set_default(cmap, "RdBu")
     ax = set_default(ax, plt.gca())
+    legend_kw = set_default(legend_kw, {})
+    cbar_kw = set_default(cbar_kw, {})
 
     if data is not None:
         x = data[x].to_numpy()
@@ -65,14 +61,25 @@ def bubble(data: Optional[pd.DataFrame] = None,
     circ_size = norm_arr(size, sizes)
     bubbles = ax.scatter(x, y, s=circ_size, c=hue, cmap=cmap)
 
-    set_size_legend(ax, size, circ_size, pos=legend_pos, title=legend_title, dtype=dtype)
+    legend_options = dict(
+        bbox_to_anchor=(1.05, 1),
+        bbox_transform=ax.transAxes,
+        loc="upper left",
+        title_align="left",
+        dtype=dtype
+    )
+    legend_options = {**legend_options, **legend_kw}
+    SizeLegend(circ_size, array=size, ax=ax, **legend_options)
+
     if hue is not None:
-        set_cbar(ax,
-                 patches=bubbles,
-                 bbox=cbar_pos,
-                 size=cbar_size,
-                 title=cbar_title,
-                 c_array=hue,
-                 ticklabels=cbar_ticklabels)
+        cbar_options = dict(
+            bbox_to_anchor=(1.05, 0),
+            bbox_transform=ax.transAxes,
+            loc="lower left",
+            title_align="left",
+        )
+        cbar_options = {**cbar_options, **cbar_kw}
+        Colorbar(bubbles, ax=ax, **cbar_options)
+    set_spines(ax, (1, 0, 1, 0))
 
     return ax

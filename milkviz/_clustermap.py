@@ -1,67 +1,39 @@
-from cProfile import label
-from typing import List, Union, Optional, Dict
+from __future__ import annotations
+
+from typing import List, Optional, Dict, Any
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import cm
+
 from legendkit import CatLegend, Colorbar, vstack, hstack
+from milkviz.utils import color_mapper_cat, doc, set_default
 
-from milkviz.types import Pos, Colors, Text, Size
-from milkviz.utils import color_mapper_cat, set_cbar, doc, set_category_square_legend
-
-
-def anno_colors(info: pd.DataFrame, color: Union[str, List[str]]):
-    uni_types = np.unique(info.to_numpy().flatten())
-    colors_mapper = color_mapper_cat(color, uni_types)
-    return info.replace(colors_mapper)
-
-
-def move_bbox(bbox, move_index, amount):
-    bbox = list(bbox)
-    bbox[move_index] += amount
-    return tuple(bbox)
-
-
-def color_legend_split(ax, legend_pos, legend_contents, colors_mapper, padding):
-    extend_ncol = {1: 1, 2: 1.5, 3: 2}
-    ncol = 1
-    # legend_pos = move_bbox(legend_pos, 0, -padding)
-
-    legend_list = []
-
-    for k, labels in legend_contents.items():
-        # legend_pos = move_bbox(legend_pos, 0, padding)
-        # cmapper = {i: colors_mapper[i] for i in v}
-        # padding /= ncol  # reset the padding
-        leg = CatLegend([colors_mapper[i] for i in labels], labels=labels, handle="square", ax=ax)
-        legend_list.append(leg)
-        # ncol = set_category_square_legend(ax, cmapper, pos=legend_pos, title=k)
-        # padding *= extend_ncol[ncol]  # if ncol > 1, extend the padding
-    hstack(legend_list)
 
 @doc
 def anno_clustermap(
         data: pd.DataFrame,
         # define row colors
-        row_colors: Union[str, List[str], None] = None,
-        row_colors_cmap: Union[str, List[str], None] = None,
-        row_colors_order: Optional[Dict] = None,
-        row_colors_label: Optional[Dict] = None,
-        row_label: Optional[str] = None,
-        row_legend_title: Optional[str] = None,
+        row_colors: str | List[str] = None,
+        row_colors_cmap: str | List[str] = None,
+        row_colors_order: Dict = None,
+        row_colors_label: Dict = None,
+        row_label: str = None,
+        row_legend_title: str = None,
         row_legend_split: bool = True,
-        legend_padding: float = 0.25,
         # define col colors
-        col_colors: Union[str, List[str], None] = None,
-        col_colors_cmap: Union[str, List[str], None] = None,
-        col_colors_order: Optional[Dict] = None,
-        col_colors_label: Optional[Dict] = None,
-        col_label: Optional[str] = None,
-        col_legend_title: Optional[str] = None,
+        col_colors: str | List[str] = None,
+        col_colors_cmap: str | List[str] = None,
+        col_colors_order: Dict = None,
+        col_colors_label: Dict = None,
+        col_label: str = None,
+        col_legend_title: str = None,
         col_legend_split: bool = True,
-
-        heat_cmap: Colors = None,
+        heat_cmap: Any = None,
+        legend_padding: float = 5,
+        legend_kw: Dict = None,
+        cbar_kw: Dict = None,
         categorical_cbar: Optional[List[str]] = None,
         **kwargs,
 ) -> sns.matrix.ClusterGrid:
@@ -77,7 +49,9 @@ def anno_clustermap(
         {row|col}_colors_label: A dict-like mapper to overwrite the name of each level,
         {row|col}_legend_split: Whether to split each level of colors stripe
         {row|col}_legend_title: The title of row legend, when row_legend_split = False
-
+        legend_padding: The space between legend
+        legend_kw: Options to customize legend, will be applied to all,
+        cbar_kw: Options to customize colorbar, if categorical cbar, use legend_kw
         heat_cmap: The colormap for heatmap, default: "RdBu_r"
         categorical_cbar: Turn the colorbar in to categorical legend in text
         **kwargs: Pass to `seaborn.clustermap <https://seaborn.pydata.org/generated/seaborn.clustermap.html#seaborn.clustermap>`_
@@ -89,6 +63,8 @@ def anno_clustermap(
     row_colors_cmap = "tab20" if row_colors_cmap is None else row_colors_cmap
     col_colors_cmap = "echarts" if col_colors_cmap is None else col_colors_cmap
     heat_cmap = "RdBu_r" if heat_cmap is None else heat_cmap
+    legend_kw = set_default(legend_kw, {})
+    cbar_kw = set_default(cbar_kw, {})
 
     # split the dataframe
     data = data.copy()
@@ -154,71 +130,73 @@ def anno_clustermap(
     cbar_transform = dict(
         bbox_to_anchor=(1.05, 0),
         ax=g.ax_heatmap,
-        bbox_transform=g.ax_heatmap.transAxes, 
+        bbox_transform=g.ax_heatmap.transAxes,
         loc="lower left",
     )
+
+    legend_options = dict(
+        handle="square",
+        title_align="left",
+    )
+    legend_options = {**legend_options, **legend_kw}
+
+    compose_legends = []
+    # plot col colors legend
+    if col_colors is not None:
+        if col_legend_split:
+            legend_list = []
+            for k, labels in col_legend_contents.items():
+                leg = CatLegend(
+                    colors=[col_colors_mapper[i] for i in labels],
+                    labels=labels,
+                    title=k,
+                    **legend_options
+                )
+                legend_list.append(leg)
+            g.col_color_legend = hstack(legend_list, spacing=legend_padding)
+        else:
+            title = col_colors[0] if col_legend_title is None else col_legend_title
+            labels, colors = zip(*col_colors_mapper.items())
+            g.col_color_legend = CatLegend(colors, labels, ax=g.ax_heatmap, title=title, **legend_options)
+        compose_legends.append(g.col_color_legend)
+
+    if row_colors is not None:
+        if row_legend_split:
+            legend_list = []
+            for k, labels in row_legend_contents.items():
+                leg = CatLegend(
+                    colors=[row_colors_mapper[i] for i in labels],
+                    labels=labels,
+                    title=k,
+                    **legend_options
+                )
+                legend_list.append(leg)
+            g.row_color_legend = hstack(legend_list, spacing=legend_padding)
+        else:
+            title = row_colors[0] if row_legend_title is None else row_legend_title
+            labels, colors = zip(*row_colors_mapper.items())
+            g.row_color_legend = CatLegend(colors, labels, title=title, title_align="left")
+        compose_legends.append(g.row_color_legend)
 
     if categorical_cbar is not None:
         cmap = cm.get_cmap(heat_cmap)
         cmap_size = np.linspace(0, cmap.N, len(categorical_cbar), dtype=int)
         labels, colors = categorical_cbar, [cmap(i) for i in cmap_size]
-        CatLegend(colors, labels, handle="square", **cbar_transform)
+        g.cbar = CatLegend(colors, labels, **cbar_transform, **legend_options)
+        compose_legends.append(g.cbar)
     else:
         cdata = g.data2d.to_numpy()
         cmin = np.nanmin(cdata)
         cmax = np.nanmax(cdata)
-        Colorbar(vmin=cmin, vmax=cmax, cmap=heat_cmap, **cbar_transform)
+        cbar_options = dict(
+            orientation="horizontal",
+            title_align="left",
+        )
+        cbar_options = {**cbar_options, **cbar_kw}
+        g.cbar = Colorbar(vmin=cmin, vmax=cmax, cmap=heat_cmap, **cbar_transform, **cbar_options)
 
-    if row_colors is not None:
-        row_legend_pos = (1.05, -0.4) if row_legend_pos is None else row_legend_pos
-        if row_legend_split:
-            legend_list = []
-            for k, labels in row_legend_contents.items():
-                leg = CatLegend(
-                    colors=[row_colors_mapper[i] for i in labels], 
-                    labels=labels,
-                    handle="square", 
-                    title=k,
-                    title_align="left",
-                    )
-                legend_list.append(leg)
-            g.row_color_legend = hstack(legend_list, **legend_transform)
-        else:
-            title = row_colors[0] if row_legend_title is None else row_legend_title
-            colors, labels = [], []
-            for l, c in row_colors_mapper.items():
-                colors.append(c)
-                labels.append(l)
-            g.row_color_legend = CatLegend(colors, labels, handle="square", ax=g.ax_heatmap, title=title, **legend_transform)
-
-    # plot col colors legend
-    if col_colors is not None:
-        col_legend_pos = (1.05, 0) if col_legend_pos is None else col_legend_pos
-        if col_legend_split:
-            legend_list = []
-            for k, labels in col_legend_contents.items():
-                leg = CatLegend(
-                    colors=[col_colors_mapper[i] for i in labels], 
-                    labels=labels, 
-                    handle="square", 
-                    title=k,
-                    title_align="left",
-                    )
-                legend_list.append(leg)
-            g.col_color_legend = hstack(legend_list, **legend_transform)
-            g.ax_heatmap.add_artist(g.col_color_legend)
-        else:
-            title = col_colors[0] if col_legend_title is None else col_legend_title
-            colors, labels = [], []
-            for l, c in col_colors_mapper.items():
-                colors.append(c)
-                labels.append(l)
-            g.col_color_legend = CatLegend(colors, labels, handle="square", ax=g.ax_heatmap, title=title, **legend_transform)
-
-        if hasattr(g, 'row_color_legend') & hasattr(g, 'col_color_legend'):
-            compose_legends = vstack([g.col_color_legend, g.row_color_legend], **legend_transform)
-            g.ax_heatmap.add_artist(compose_legends)
-    
+    g.compose_legends = vstack(compose_legends, padding=0, spacing=legend_padding, align="left", **legend_transform)
+    g.ax_heatmap.add_artist(g.compose_legends)
 
     # close labels and ticks on y-axis
     if row_label is None:

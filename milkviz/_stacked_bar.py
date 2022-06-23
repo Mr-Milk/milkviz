@@ -1,16 +1,18 @@
-from typing import Optional, Union, Text
+from __future__ import annotations
+
+from itertools import cycle
+from typing import Union, List, Dict
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from itertools import cycle
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
 
-from milkviz.types import Pos
-from milkviz.utils import doc, set_category_square_legend
+from legendkit import CatLegend
+from milkviz.utils import doc, set_default
 from milkviz.utils import get_cmap_colors, set_spines
 
 
@@ -23,18 +25,16 @@ def fold_add(arr):
 
 
 @doc
-def stacked_bar(data: Optional[pd.DataFrame] = None,
-                x: Union[str, np.ndarray, None] = None,
-                y: Union[str, np.ndarray, None] = None,
+def stacked_bar(data: pd.DataFrame = None,
+                x: str | List | np.ndarray = None,
+                y: str | List | np.ndarray = None,
                 stacked: Union[str, np.ndarray, None] = None,
                 orient: str = "v",
                 percentage: bool = False,
                 cmap: Union[str, Colormap, None] = None,
                 show_values: bool = False,
-                legend_title: Text = None,
-                legend_pos: Pos = None,
-                legend_ncol: Optional[int] = None,
-                ax: Optional[mpl.axes.Axes] = None,
+                legend_kw: Dict = None,
+                ax: mpl.axes.Axes = None,
                 **kwargs,
                 ) -> Axes:
     """Stacked bar plot
@@ -48,9 +48,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
         percentage: Normalize value to 1
         cmap: [cmap], default: "echarts", a custom milkviz palette
         show_values: Whether to display values of each block
-        legend_title: [legend_title]
-        legend_pos: [legend_pos]
-        legend_ncol: [legend_ncol]
+        legend_kw: The options to configure legend
         ax: [ax]
         **kwargs: Pass to `seaborn.barplot <https://seaborn.pydata.org/generated/seaborn.barplot.html#seaborn.barplot>`_
 
@@ -60,6 +58,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
     """
 
     cmap = "echarts" if cmap is None else cmap
+    legend_kw = set_default(legend_kw, {})
 
     if ax is None:
         ax = plt.gca()
@@ -92,7 +91,7 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
 
     colors = get_cmap_colors(cmap)
     # This reverse step is to make the stacked column in the right order
-    legends_cmapper = {}
+    leg_colors, leg_labels = [], []
     for (n, g), c in zip(data_g.iloc[::-1, :].groupby(stacked, sort=False), cycle(colors)):
         bar = sns.barplot(x=x, y=y, data=g, ax=ax, color=c, orient=orient, ci=None, **kwargs)
         if show_values:
@@ -102,12 +101,19 @@ def stacked_bar(data: Optional[pd.DataFrame] = None,
                     bar.text(i, text, text, ha="center", va="center", bbox=dict(fc="white", alpha=0.7))
                 else:
                     bar.text(text, i, text, ha="center", va="center", rotation=-90, bbox=dict(fc="white", alpha=0.7))
-        legends_cmapper[n] = c
-    set_category_square_legend(ax,
-                               legends_cmapper,
-                               pos=legend_pos,
-                               title=stacked if legend_title is None else legend_title,
-                               ncol=legend_ncol,
-                               )
+        leg_colors.append(c)
+        leg_labels.append(n)
+
+    legend_kw = set_default(legend_kw, {})
+    legend_options = dict(
+        handle="square",
+        title_align="left",
+        bbox_to_anchor=(1.05, 0.5),
+        bbox_transform=ax.transAxes,
+        loc="center left",
+        title=stacked if isinstance(stacked, str) else None,
+    )
+    legend_options = {**legend_options, **legend_kw}
+    CatLegend(leg_colors, leg_labels, ax=ax, **legend_options)
     set_spines(ax, (1, 0, 1, 0))
     return ax

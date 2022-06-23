@@ -1,4 +1,6 @@
-from typing import List, Tuple, Optional, Union, Any, Dict
+from __future__ import annotations
+
+from typing import List, Tuple, Any, Dict
 
 import matplotlib as mpl
 import matplotlib.axes
@@ -6,15 +8,12 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import PatchCollection, LineCollection
-from matplotlib.colors import Colormap
 from mpl_toolkits.mplot3d import Axes3D
 
 from legendkit import CatLegend, Colorbar
-
-from milkviz.types import OneDimNum, Colors, Pos, Size
-from milkviz.utils import set_cbar, set_ticks, set_spines, \
+from milkviz.utils import set_ticks, set_spines, \
     color_mapper_cat, rotate_points, color_mapper_val, doc, create_cmap, normalize, \
-    set_category_circle_legend, set_default
+    set_default
 
 
 def _init_canvas(ax):
@@ -26,50 +25,52 @@ def _init_canvas(ax):
 
 
 def _set_cat_legend(cmapper, ax, legend_kw):
-    colors, labels = [], []
-    for l, c in cmapper.items():
-        colors.append(c)
-        labels.append(l)
-    if legend_kw is None:
-        legend_kw = {}
-    legend_kw = dict(
+    labels, colors = zip(*cmapper.items())
+    legend_options = dict(
+        handle="circle",
         bbox_to_anchor=(1.05, 0.5),
         bbox_transform=ax.transAxes,
         loc="center left",
-        **legend_kw,
+        title_align="left",
     )
-    CatLegend(colors, labels, handle="circle", ax=ax, **legend_kw)
+    legend_options = {**legend_options, **legend_kw}
+    CatLegend(colors, labels, ax=ax, **legend_options)
 
 
 def _set_cbar(values, cmap, ax, cbar_kw):
     cmin = np.nanmin(values)
     cmax = np.nanmax(values)
-    if cbar_kw is None:
-        cbar_kw = {}
-    Colorbar(vmin=cmin, vmax=cmax, cmap=cmap, ax=ax, **cbar_kw)
+    cbar_options = dict(
+        bbox_to_anchor=(1.05, 0.5),
+        bbox_transform=ax.transAxes,
+        loc="center left",
+        title_align="left",
+    )
+    cbar_options = {**cbar_options, **cbar_kw}
+    Colorbar(vmin=cmin, vmax=cmax, cmap=cmap, ax=ax, **cbar_options)
 
 
 @doc
 def point_map(
-        x: OneDimNum,
-        y: OneDimNum,
-        types: Union[List[str], np.ndarray, None] = None,
-        types_colors: Optional[Dict[str, str]] = None,
-        values: OneDimNum = None,
-        links: Union[List[Tuple[int, int]], np.ndarray, None] = None,
-        vmin: Optional[float] = None,
-        vmax: Optional[float] = None,
-        colors: Optional[List[Any]] = None,
-        cmap: Colors = None,
-        rotate: Optional[int] = None,
-        markersize: Optional[int] = 5,
-        linecolor: Union[str, List[str]] = "#cccccc",
+        x,
+        y,
+        types: List | np.ndarray = None,
+        types_colors: Dict = None,
+        values: List | np.ndarray = None,
+        links: List | np.ndarray = None,
+        vmin: float = None,
+        vmax: float = None,
+        colors: List = None,
+        cmap: Any = None,
+        rotate: int = None,
+        markersize: int = 5,
+        linecolor: Any = "#cccccc",
         linewidth: int = 1,
         no_spines: bool = True,
         legend: bool = True,
         legend_kw: Dict = None,
         cbar_kw: Dict = None,
-        ax: Optional[mpl.axes.Axes] = None,
+        ax: mpl.axes.Axes = None,
 ):
     """Point map
 
@@ -101,6 +102,8 @@ def point_map(
         ax = plt.gca()
     if no_spines:
         set_spines(ax)
+    legend_kw = set_default(legend_kw, {})
+    cbar_kw = set_default(cbar_kw, {})
 
     _init_canvas(ax)
 
@@ -111,7 +114,7 @@ def point_map(
         if not isinstance(linecolor, str):
             if len(linecolor) != len(links):
                 raise ValueError("Length of linecolor must match to links")
-        lines = [[(x[i1], y[i1]), (x[i2], y[i2])] for i1, i2 in links]
+        lines = np.array([[[x[i1], y[i1]], [x[i2], y[i2]]] for i1, i2 in links])
         line_collections = LineCollection(lines, linewidths=linewidth, edgecolors=linecolor, zorder=-100)
         ax.add_collection(line_collections)
 
@@ -147,21 +150,21 @@ def point_map(
 
 @doc
 def point_map3d(
-        x: Union[List[float], np.ndarray],
-        y: Union[List[float], np.ndarray],
-        z: Union[List[float], np.ndarray],
-        types: Union[List[str], np.ndarray, None] = None,
-        types_colors: Optional[Dict[str, str]] = None,
-        values: Union[List[float], np.ndarray, None] = None,
-        vmin: Optional[float] = None,
-        vmax: Optional[float] = None,
-        colors: Optional[List[Any]] = None,
-        cmap: Union[str, Colormap] = None,
+        x,
+        y,
+        z,
+        types: List | np.ndarray = None,
+        types_colors: Dict = None,
+        values: List | np.ndarray = None,
+        vmin: float = None,
+        vmax: float = None,
+        colors: List | np.ndarray = None,
+        cmap: Any = None,
         legend: bool = True,
         legend_kw: Dict = None,
         cbar_kw: Dict = None,
-        markersize: Optional[int] = 5,
-        ax: Optional[mpl.axes.Axes] = None,
+        markersize: int = 5,
+        ax: mpl.axes.Axes = None,
 ):
     """Point map in 3D
 
@@ -185,6 +188,9 @@ def point_map3d(
             [return_obj]
 
         """
+    legend_kw = set_default(legend_kw, {})
+    cbar_kw = set_default(cbar_kw, {})
+
     if ax is None:
         fig = plt.gcf()
         ax = fig.add_subplot(projection='3d')
@@ -233,18 +239,18 @@ def point_map3d(
 @doc
 def polygon_map(
         polygons: List[List[Tuple[float, float]]],
-        types: Union[List[str], np.ndarray, None] = None,
-        values: Union[List[float], np.ndarray, None] = None,
-        vmin: Optional[float] = None,
-        vmax: Optional[float] = None,
-        colors: Optional[List[Any]] = None,
-        cmap: Union[str, Colormap] = None,
+        types: List | np.ndarray = None,
+        values: List | np.ndarray = None,
+        vmin: float = None,
+        vmax: float = None,
+        colors: List = None,
+        cmap: Any = None,
         legend: bool = True,
         legend_kw: Dict = None,
         cbar_kw: Dict = None,
-        rotate: Optional[int] = None,
+        rotate: int = None,
         no_spines: bool = True,
-        ax: Optional[mpl.axes.Axes] = None,
+        ax: mpl.axes.Axes = None,
 ):
     """Polygon map
 
@@ -270,6 +276,8 @@ def polygon_map(
     vstack_poly = np.vstack(polygons)
     xmin, ymin = np.min(vstack_poly, axis=0)
     xmax, ymax = np.max(vstack_poly, axis=0)
+    legend_kw = set_default(legend_kw, {})
+    cbar_kw = set_default(cbar_kw, {})
 
     if rotate is not None:
         rotated_polygons = []
@@ -284,7 +292,7 @@ def polygon_map(
         set_spines(ax)
 
     _init_canvas(ax)
-    
+
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
@@ -311,7 +319,7 @@ def polygon_map(
             patches_collections = PatchCollection(patches, facecolors=colors, cmap=cmap)
             ax.add_collection(patches_collections)
             if legend:
-                _set_cbar(values, cmap, cbar_kw)
+                _set_cbar(values, cmap, ax, cbar_kw)
         else:
             patches = [mpatches.Polygon(polygon) for polygon in polygons]
             patches_collections = PatchCollection(patches)

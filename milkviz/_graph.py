@@ -1,4 +1,4 @@
-from typing import List, Any, Tuple, Optional, Union
+from typing import List, Any, Tuple, Optional, Union, Dict
 
 import matplotlib as mpl
 import numpy as np
@@ -6,13 +6,14 @@ from matplotlib import cm
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 
-from milkviz.utils import norm_arr, set_spines, set_cbar, doc
+from legendkit import Colorbar
+from milkviz.utils import norm_arr, set_spines, doc, set_default
 
 
 @doc
 def graph(
-        nodes: List,
         edges: List[Tuple[Any, Any]],
+        nodes: List = None,
         nodes_size: Optional[List[float]] = None,
         nodes_color: Union[List[float], List[str], str, None] = "#69B0AC",
         edges_width: Optional[List[float]] = None,
@@ -23,8 +24,8 @@ def graph(
         edges_color_range: Optional[Tuple[float, float]] = None,
         node_cmap: Optional[str] = "Purples",
         edge_cmap: Optional[str] = "RdBu",
-        node_color_legend_title: str = "node\ncolor",
-        edge_color_legend_title: str = "edge\ncolor",
+        node_cbar_kw: Dict = None,
+        edge_cbar_kw: Dict = None,
         sizes: Tuple[float, float] = (100, 1500),
         node_shape: str = "o",
         linewidth: Tuple[float, float] = (1, 10),
@@ -48,8 +49,8 @@ def graph(
         edges_color_range: Use to remap the edges colors, overwrite the min, max of edges_color array
         node_cmap: The colormap for node
         edge_cmap: The colormap for edge
-        node_color_legend_title: Title for nodes colorbar
-        edge_color_legend_title: Title for edges colorbar
+        node_cbar_kw: To control the cbar of node
+        edge_cbar_kw: To control the cbar of edge
         sizes: [sizes]
         node_shape: The shape of the node. Specification is as matplotlib.scatter marker, one of ‘so^>v<dph8’.
         linewidth: Line width of symbol border
@@ -72,9 +73,13 @@ def graph(
     except ImportError:
         raise ImportError("Extra dependencies needed, Try `pip install networkx`")
 
+    node_cbar_kw = set_default(node_cbar_kw, {})
+    edge_cbar_kw = set_default(edge_cbar_kw, {})
+
     G = nx.Graph()
-    G.add_nodes_from(nodes)
     G.add_edges_from(edges)
+    if nodes is not None:
+        G.add_nodes_from(nodes)
     if ax is None:
         ax = plt.gca()
 
@@ -132,20 +137,27 @@ def graph(
                                            node_shape=node_shape,
                                            )
     label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
-    labels = nx.draw_networkx_labels(G, pos, font_size=mpl.rcParams['font.size'], bbox=label_options)
+    nx.draw_networkx_labels(G, pos, font_size=mpl.rcParams['font.size'], bbox=label_options)
 
-    bbox_loc = {0: (1.07, 0, 0.1, 0.3), 1: (1.27, 0, 0.1, 0.3)}
-    cbar_count = 0
     if node_cmin is not None:
-        set_cbar(ax,
-                 patches=nodes_patches,
-                 bbox=bbox_loc[cbar_count],
-                 title=node_color_legend_title,
-                 cmin=node_cmin, cmax=node_cmax, cmap=node_cmap)
-    cbar_count += 1
+        node_cbar_options = dict(
+            orientation="horizontal",
+            bbox_to_anchor=(1, -0.05),
+            bbox_transform=ax.transAxes,
+            loc="upper right",
+            title_align="left",
+        )
+        node_cbar_options = {**node_cbar_options, **node_cbar_kw}
+        Colorbar(vmin=node_cmin, vmax=node_cmax, ax=ax, cmap=node_cmap, **node_cbar_options)
+
     if edge_cmin is not None:
-        set_cbar(ax, patches=edges_patches, bbox=bbox_loc[cbar_count], title=edge_color_legend_title,
-                 cmin=edge_cmin, cmax=edge_cmax, cmap=edge_cmap)
+        edge_cbar_options = dict(
+            bbox_to_anchor=(1.05, 0),
+            bbox_transform=ax.transAxes,
+            loc="lower left",
+            title_align="left",
+        )
+        edge_cbar_options = {**edge_cbar_options, **edge_cbar_kw}
+        Colorbar(vmin=edge_cmin, vmax=edge_cmax, ax=ax, cmap=edge_cmap, **edge_cbar_options)
     set_spines(ax)
-    plt.tight_layout()
     return ax
