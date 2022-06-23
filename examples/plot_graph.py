@@ -19,6 +19,7 @@ edges = [("Apple", "Banana"), ("Banana", "Grape"),
          ("Grape", "Pineapple"), ("Banana", "Pineapple"),
          ("Banana", "Orange"), ("Grape", "Orange")]
 
+np.random.seed(0)
 nodes_size = np.random.randint(0, 100, 5).tolist()
 edges_width = np.random.randint(0, 100, 6).tolist()
 nodes_color = np.random.randint(0, 100, 5).tolist()
@@ -29,8 +30,11 @@ edges_color = np.random.randint(0, 100, 6).tolist()
 # Create the graph
 # ----------------------------
 #
-mv.graph(nodes, edges,
+mv.graph(edges, nodes,
          nodes_size=nodes_size,
          edges_width=edges_width,
          nodes_color=nodes_color,
-         edges_color=edges_color)
+         edges_color=edges_color,
+         node_cbar_kw={"title": "Node Color"},
+         edge_cbar_kw={"title": "Edge\nColor"}
+         )

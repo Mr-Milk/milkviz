@@ -12,50 +12,37 @@ Currently, I made 6 categorical colormap
 - spring_pastels (9)
 
 """
-import milkviz.colormap as mc
-import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+import milkviz as mv
+
+
+gradient = np.linspace(0, 1, 256)
+gradient = np.vstack((gradient, gradient))
+
+
+def plot_cmap(cmap_list):
+    # Create figure and adjust figure height to number of colormaps
+    nrows = len(cmap_list)
+    figh = 0.35 + 0.15 + (nrows + (nrows - 1) * 0.1) * 0.22
+    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(6.4, figh))
+    fig.subplots_adjust(top=1 - 0.35 / figh, bottom=0.15 / figh,
+                        left=0.2, right=0.99)
+    axs[0].set_title(f'milkviz colormaps', fontsize=14)
+
+    for ax, name in zip(axs, cmap_list):
+        ax.imshow(gradient, aspect='auto', cmap=plt.get_cmap(name))
+        ax.text(-0.01, 0.5, name, va='center', ha='right', fontsize=10,
+                transform=ax.transAxes)
+
+    # Turn off *all* ticks & spines, not just the ones with colormaps.
+    for ax in axs:
+        ax.set_axis_off()
+
 
 # %%
-# echarts
+# milkviz's colormap
 # -------------------------------------
-# You can either call it by name or import it
 #
-sns.color_palette("echarts", n_colors=16)
-sns.color_palette(mc.echarts.colors)
-
-
-# %%
-# tailwind
-# ----------------------------
-# This is a mocking of tab20
-#
-sns.color_palette("tailwind", n_colors=20)
-
-
-# %%
-# Retro Metro
-# ----------------------------
-#
-sns.color_palette("retro_metro", n_colors=9)
-
-
-# %%
-# Dutch Field
-# ----------------------------
-#
-sns.color_palette("dutch_field", n_colors=9)
-
-
-# %%
-# River Nights
-# ----------------------------
-#
-sns.color_palette("river_nights", n_colors=9)
-
-
-# %%
-# Spring Pastels
-# ----------------------------
-#
-sns.color_palette("spring_pastels", n_colors=9)
-
+plot_cmap(["echarts", "tailwind", "retro_metro",
+           "dutch_field", "river_nights", "spring_pastels"])

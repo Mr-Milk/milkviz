@@ -14,7 +14,7 @@ import milkviz as mv
 # First let's create some random data
 # -------------------------------------
 #
-
+np.random.seed(0)
 def generate_polygon():
     upper = np.random.randint(0, 100)
     lower = np.random.randint(0, 100)

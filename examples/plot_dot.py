@@ -12,6 +12,7 @@ import milkviz as mv
 # First let's create some random data
 # -------------------------------------
 #
+np.random.seed(0)
 shape = (10, 3)
 colors = np.repeat([['#3A3226', '#CB1B45', '#F75C2F']], 10, axis=0)
 sizes = np.random.randint(1, 100, shape)
@@ -23,5 +24,5 @@ labels = ["apple", "banana", "Coconut", "Plum", "Kiwifruit",
 # Create the dot heatmap
 # ----------------------------
 #
-mv.dot(sizes, colors, yticklabels=labels)
+mv.dot(sizes, colors, yticklabels=labels, legend_kw={"title": "Size"})
 
