@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import cycle
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Callable
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ def stacked_bar(data: pd.DataFrame = None,
                 orient: str = "v",
                 percentage: bool = False,
                 cmap: Union[str, Colormap, None] = None,
-                show_values: bool = False,
+                show_values: bool | Callable = False,
                 legend_kw: Dict = None,
                 ax: mpl.axes.Axes = None,
                 **kwargs,
@@ -47,7 +47,9 @@ def stacked_bar(data: pd.DataFrame = None,
         orient: "v" or "h"
         percentage: Normalize value to 1
         cmap: [cmap], default: "echarts", a custom milkviz palette
-        show_values: Whether to display values of each block
+        show_values: Whether to display values of each block,
+            or you can pass in a function to tell when to display
+            like `lambda x: x > 100` will only display when value exceed 100
         legend_kw: The options to configure legend
         ax: [ax]
         **kwargs: Pass to `seaborn.barplot <https://seaborn.pydata.org/generated/seaborn.barplot.html#seaborn.barplot>`_
@@ -60,6 +62,11 @@ def stacked_bar(data: pd.DataFrame = None,
     cmap = "echarts" if cmap is None else cmap
     legend_kw = set_default(legend_kw, {})
 
+    show_values_func = lambda a: a
+    if isinstance(show_values, Callable):
+        show_values_func = show_values
+        show_values = True
+
     if ax is None:
         ax = plt.gca()
 
@@ -68,8 +75,10 @@ def stacked_bar(data: pd.DataFrame = None,
         x = "x"
         y = "y"
         stacked = "stacked"
-
+    # This reverse step is to make the label column in the right order
+    data = data.iloc[::-1, :]
     value_key, label_key = (y, x) if orient == "v" else (x, y)
+    text_key = "display"
     stacked_order = data[stacked].unique()
     label_order = data[label_key].unique()
 
@@ -82,12 +91,12 @@ def stacked_bar(data: pd.DataFrame = None,
                 s_order.append(i)
         g = g.loc[s_order, :]
         v = g[value_key].to_numpy()
+        g[text_key] = v
         if percentage:
             v = v / v.sum()
         g[value_key] = fold_add(v)
         all_g.append(g)
-    # This reverse step is to make the label column in the right order
-    data_g = pd.concat(all_g[::-1]).reset_index()
+    data_g = pd.concat(all_g).reset_index()
 
     colors = get_cmap_colors(cmap)
     # This reverse step is to make the stacked column in the right order
@@ -96,11 +105,13 @@ def stacked_bar(data: pd.DataFrame = None,
         bar = sns.barplot(x=x, y=y, data=g, ax=ax, color=c, orient=orient, ci=None, **kwargs)
         if show_values:
             for i in range(len(g)):
-                text = g.iloc[i, :][value_key]
-                if orient == "v":
-                    bar.text(i, text, text, ha="center", va="center", bbox=dict(fc="white", alpha=0.7))
-                else:
-                    bar.text(text, i, text, ha="center", va="center", rotation=-90, bbox=dict(fc="white", alpha=0.7))
+                loc = g.iloc[i, :][value_key]
+                text = g.iloc[i, :][text_key]
+                if show_values_func(float(text)):
+                    if orient == "v":
+                        bar.text(i, loc, text, ha="center", va="center", bbox=dict(fc="white", alpha=0.7))
+                    else:
+                        bar.text(loc, i, text, ha="center", va="center", rotation=-90, bbox=dict(fc="white", alpha=0.7))
         leg_colors.append(c)
         leg_labels.append(n)
 

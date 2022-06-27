@@ -35,6 +35,7 @@ def anno_clustermap(
         legend_kw: Dict = None,
         cbar_kw: Dict = None,
         categorical_cbar: Optional[List[str]] = None,
+        cbar_title: str = None,
         **kwargs,
 ) -> sns.matrix.ClusterGrid:
     """Color or label annotated clustermap
@@ -54,6 +55,7 @@ def anno_clustermap(
         cbar_kw: Options to customize colorbar, if categorical cbar, use legend_kw
         heat_cmap: The colormap for heatmap, default: "RdBu_r"
         categorical_cbar: Turn the colorbar in to categorical legend in text
+        cbar_title: Set the title for colorbar
         **kwargs: Pass to `seaborn.clustermap <https://seaborn.pydata.org/generated/seaborn.clustermap.html#seaborn.clustermap>`_
 
     Returns:
@@ -182,7 +184,7 @@ def anno_clustermap(
         cmap = cm.get_cmap(heat_cmap)
         cmap_size = np.linspace(0, cmap.N, len(categorical_cbar), dtype=int)
         labels, colors = categorical_cbar, [cmap(i) for i in cmap_size]
-        g.cbar = CatLegend(colors, labels, **cbar_transform, **legend_options)
+        g.cbar = CatLegend(colors, labels, title=cbar_title, **cbar_transform, **legend_options)
         compose_legends.append(g.cbar)
     else:
         cdata = g.data2d.to_numpy()
@@ -193,7 +195,7 @@ def anno_clustermap(
             title_align="left",
         )
         cbar_options = {**cbar_options, **cbar_kw}
-        g.cbar = Colorbar(vmin=cmin, vmax=cmax, cmap=heat_cmap, **cbar_transform, **cbar_options)
+        g.cbar = Colorbar(vmin=cmin, vmax=cmax, cmap=heat_cmap, title=cbar_title, **cbar_transform, **cbar_options)
 
     g.compose_legends = vstack(compose_legends, padding=0, spacing=legend_padding, align="left", **legend_transform)
     g.ax_heatmap.add_artist(g.compose_legends)
