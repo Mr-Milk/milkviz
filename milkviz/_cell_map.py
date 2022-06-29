@@ -24,6 +24,18 @@ def _init_canvas(ax):
     ax.set_yticklabels([])
 
 
+def _color_array(c_array, cmap, cmapper, types):
+    color_array = None if cmapper is None else [cmapper[t] for t in types]
+    if cmapper is None:
+        if c_array is not None:
+            cmapper = color_mapper_cat(types, c_array=c_array)
+        else:
+            cmapper = color_mapper_cat(types, cmap=cmap)
+        color_array = [cmapper[t] for t in types]
+
+    return cmapper, color_array
+
+
 def _set_cat_legend(cmapper, ax, legend_kw):
     labels, colors = zip(*cmapper.items())
     legend_options = dict(
@@ -120,14 +132,7 @@ def point_map(
 
     if types is not None:
         cmap = set_default(cmap, "echarts")
-        cmapper = types_colors
-        color_array = None if cmapper is None else [cmapper[t] for t in types]
-        if cmapper is None:
-            if colors is not None:
-                cmapper = color_mapper_cat(types, c_array=colors)
-            else:
-                cmapper = color_mapper_cat(types, cmap=cmap)
-            color_array = [cmapper[t] for t in types]
+        cmapper, color_array = _color_array(colors, cmap, types_colors, types)
 
         ax.scatter(x=x, y=y, c=color_array, s=markersize)
         if legend:
@@ -206,14 +211,7 @@ def point_map3d(
 
     if types is not None:
         cmap = set_default(cmap, "tab20")
-        cmapper = types_colors
-        color_array = None if cmapper is None else [cmapper[t] for t in types]
-        if cmapper is None:
-            if colors is not None:
-                cmapper = color_mapper_cat(types, c_array=colors)
-            else:
-                cmapper = color_mapper_cat(types, cmap=cmap)
-            color_array = [cmapper[t] for t in types]
+        cmapper, color_array = _color_array(colors, cmap, types_colors, types)
 
         ax.scatter(x, y, z, c=color_array, s=markersize)
         if legend:
@@ -226,7 +224,7 @@ def point_map3d(
             if colors is not None:
                 vc_mapper = dict(zip(values, colors))
                 cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
-            p = ax.scatter(x, y, z, c=values, s=markersize, cmap=cmap)
+            ax.scatter(x, y, z, c=values, s=markersize, cmap=cmap)
             if legend:
                 # pos: 1.2, 0.05
                 _set_cbar(values, cmap, ax, cbar_kw)
@@ -240,6 +238,7 @@ def point_map3d(
 def polygon_map(
         polygons: List[List[Tuple[float, float]]],
         types: List | np.ndarray = None,
+        types_colors: Dict = None,
         values: List | np.ndarray = None,
         vmin: float = None,
         vmax: float = None,
@@ -257,6 +256,7 @@ def polygon_map(
     Args:
         polygons: A list of polygons, a polygon is represented by a list of points
         types: [types] of polygons
+        types_colors: A dictionary that tells color for every type, key is the type and value is the color
         values: [values] of polygons
         vmin, vmax: [vminmax]
         colors: [hue]
@@ -297,11 +297,8 @@ def polygon_map(
     ax.set_ylim(ymin, ymax)
 
     if types is not None:
-        cmap = set_default(cmap, "tab20")
-        if colors is not None:
-            cmapper = color_mapper_cat(types, c_array=colors)
-        else:
-            cmapper = color_mapper_cat(types, cmap=cmap)
+        cmap = set_default(cmap, "echarts")
+        cmapper, color_array = _color_array(colors, cmap, types_colors, types)
         patches = [mpatches.Polygon(polygon) for polygon in polygons]
         patches_collections = PatchCollection(patches, facecolors=[cmapper[t] for t in types])
         ax.add_collection(patches_collections)
