@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Literal, Optional, List, Union, Tuple, Any, Dict
+from typing import Optional, List, Union, Tuple, Any, Dict
+from typing_extensions import Literal
 
 import matplotlib as mpl
 import matplotlib.axes
