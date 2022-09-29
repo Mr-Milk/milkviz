@@ -1,3 +1,35 @@
+[tool.poetry]
+name = "milkviz"
+version = "0.6.0"
+description = "Self-opinionated miscellaneous visualizations library in python"
+authors = ["Mr-Milk <yb97643@um.edu.mo>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Mr-Milk/milkviz"
+classifiers = [
+      "License :: OSI Approved :: MIT License",
+      "Programming Language :: Python :: 3",
+      "Framework :: Matplotlib",
+      "Intended Audience :: Science/Research",
+      "Intended Audience :: Developers",
+      "Topic :: Scientific/Engineering :: Visualization"
+]
+
+[tool.poetry.dependencies]
+python = ["^3.8"]
+matplotlib = "^3.5"
+pandas = "^1.5.0"
+legendkit = "^0.2.2"
+networkx = { version="^2.8.6", optional=true }
+matplotlib-venn = { version="^0.11.7", optional=true }
+UpSetPlot = { version="^0.6", optional=true }
+
+[tool.poetry.extras]
+all = ["networkx", "matplotlib-venn", "UpSetPlot"]
+
+[tool.poetry.group.dev.dependencies]
+jupyterlab = "^3.4.7"
+
 [build-system]
-requires = ["setuptools ~= 58.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
