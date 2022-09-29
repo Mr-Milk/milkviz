@@ -101,17 +101,22 @@ def stacked_bar(data: pd.DataFrame = None,
     colors = get_cmap_colors(cmap)
     # This reverse step is to make the stacked column in the right order
     leg_colors, leg_labels = [], []
-    for (n, g), c in zip(data_g.iloc[::-1, :].groupby(stacked, sort=False), cycle(colors)):
-        bar = sns.barplot(x=x, y=y, data=g, ax=ax, color=c, orient=orient, ci=None, **kwargs)
+    for (n, g), c in zip(data_g.iloc[::-1, :].groupby(stacked, sort=False),
+                         cycle(colors)):
+        bar = sns.barplot(x=x, y=y, data=g, ax=ax, color=c, orient=orient,
+                          ci=None, **kwargs)
         if show_values:
             for i in range(len(g)):
                 loc = g.iloc[i, :][value_key]
                 text = g.iloc[i, :][text_key]
                 if show_values_func(float(text)):
                     if orient == "v":
-                        bar.text(i, loc, text, ha="center", va="center", bbox=dict(fc="white", alpha=0.7))
+                        bar.text(i, loc, text, ha="center", va="center",
+                                 bbox=dict(fc="white", alpha=0.7))
                     else:
-                        bar.text(loc, i, text, ha="center", va="center", rotation=-90, bbox=dict(fc="white", alpha=0.7))
+                        bar.text(loc, i, text, ha="center", va="center",
+                                 rotation=-90,
+                                 bbox=dict(fc="white", alpha=0.7))
         leg_colors.append(c)
         leg_labels.append(n)
 

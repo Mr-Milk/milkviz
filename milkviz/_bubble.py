@@ -1,29 +1,32 @@
 from __future__ import annotations
 
-from typing import Optional, List, Tuple, Any, Dict
-
 import matplotlib as mpl
-import matplotlib.axes
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.colors import Normalize
+from typing import List, Tuple, Any, Dict
 
 from legendkit import SizeLegend, Colorbar
 from milkviz.utils import norm_arr, doc, set_default, set_spines
 
 
 @doc
-def bubble(data: Optional[pd.DataFrame] = None,
+def bubble(data: pd.DataFrame = None,
            x: str | List | np.ndarray = None,
            y: str | List | np.ndarray = None,
            hue: str | List | np.ndarray = None,
            size: str | List | np.ndarray = None,
-           cmap: Any = None,
+           cmap=None,
+           norm=None,
+           vmin=None,
+           vmax=None,
            sizes: Tuple[int, int] = (10, 250),
-           dtype: Any = None,
+           dtype=None,
            legend_kw: Dict = None,
            cbar_kw: Dict = None,
            ax: mpl.axes.Axes = None,
+           **kwargs,
            ) -> mpl.axes.Axes:
     """Bubble plot
 
@@ -44,7 +47,6 @@ def bubble(data: Optional[pd.DataFrame] = None,
         [return_obj]
 
     """
-    cmap = set_default(cmap, "RdBu")
     ax = set_default(ax, plt.gca())
     legend_kw = set_default(legend_kw, {})
     cbar_kw = set_default(cbar_kw, {})
@@ -59,24 +61,25 @@ def bubble(data: Optional[pd.DataFrame] = None,
         raise ValueError("At least `size` must be provided")
 
     circ_size = norm_arr(size, sizes)
-    bubbles = ax.scatter(x, y, s=circ_size, c=hue, cmap=cmap)
+    bubbles = ax.scatter(x, y,
+                         s=circ_size,
+                         c=hue,
+                         cmap=cmap,
+                         norm=norm,
+                         vmin=vmin,
+                         vmax=vmax,
+                         **kwargs,
+                         )
 
     legend_options = dict(
-        bbox_to_anchor=(1.05, 1),
-        bbox_transform=ax.transAxes,
-        loc="upper left",
-        title_align="left",
+        loc="out right upper",
         dtype=dtype
     )
     legend_options = {**legend_options, **legend_kw}
-    SizeLegend(circ_size, array=size, ax=ax, **legend_options)
-
+    SizeLegend(sizes=circ_size, array=size, ax=ax, **legend_options)
     if hue is not None:
         cbar_options = dict(
-            bbox_to_anchor=(1.05, 0),
-            bbox_transform=ax.transAxes,
-            loc="lower left",
-            title_align="left",
+            loc="out right lower",
         )
         cbar_options = {**cbar_options, **cbar_kw}
         Colorbar(bubbles, ax=ax, **cbar_options)

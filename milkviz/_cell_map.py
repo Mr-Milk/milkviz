@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List, Tuple, Any, Dict
 
 import matplotlib as mpl
-import matplotlib.axes
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,10 +39,7 @@ def _set_cat_legend(cmapper, ax, legend_kw):
     labels, colors = zip(*cmapper.items())
     legend_options = dict(
         handle="circle",
-        bbox_to_anchor=(1.05, 0.5),
-        bbox_transform=ax.transAxes,
-        loc="center left",
-        title_align="left",
+        loc="out right center",
     )
     legend_options = {**legend_options, **legend_kw}
     CatLegend(colors, labels, ax=ax, **legend_options)
@@ -53,10 +49,7 @@ def _set_cbar(values, cmap, ax, cbar_kw):
     cmin = np.nanmin(values)
     cmax = np.nanmax(values)
     cbar_options = dict(
-        bbox_to_anchor=(1.05, 0.5),
-        bbox_transform=ax.transAxes,
-        loc="center left",
-        title_align="left",
+        loc="out right center",
     )
     cbar_options = {**cbar_options, **cbar_kw}
     Colorbar(vmin=cmin, vmax=cmax, cmap=cmap, ax=ax, **cbar_options)
@@ -70,10 +63,11 @@ def point_map(
         types_colors: Dict = None,
         values: List | np.ndarray = None,
         links: List | np.ndarray = None,
-        vmin: float = None,
-        vmax: float = None,
         colors: List = None,
-        cmap: Any = None,
+        cmap=None,
+        norm=None,
+        vmin=None,
+        vmax=None,
         rotate: int = None,
         markersize: int = 5,
         linecolor: Any = "#cccccc",
@@ -83,6 +77,7 @@ def point_map(
         legend_kw: Dict = None,
         cbar_kw: Dict = None,
         ax: mpl.axes.Axes = None,
+        **kwargs,
 ):
     """Point map
 
@@ -92,7 +87,6 @@ def point_map(
         types: [types] of points
         types_colors: A dictionary that tells color for every type, key is the type and value is the color
         values: [values] of points
-        vmin, vmax: [vminmax]
         links: The links between points, should be a list of (point_index_1, point_index_2)
         colors: [hue]
         cmap: [cmap]
@@ -105,6 +99,7 @@ def point_map(
         legend_kw: [legend_kw]
         cbar_kw: [cbar_kw]
         ax: [ax]
+        kwargs: Pass to `Axes.scatter`
 
     Returns:
         [return_obj]
@@ -127,28 +122,29 @@ def point_map(
             if len(linecolor) != len(links):
                 raise ValueError("Length of linecolor must match to links")
         lines = np.array([[[x[i1], y[i1]], [x[i2], y[i2]]] for i1, i2 in links])
-        line_collections = LineCollection(lines, linewidths=linewidth, edgecolors=linecolor, zorder=-100)
+        line_collections = LineCollection(lines, linewidths=linewidth,
+                                          edgecolors=linecolor, zorder=-100)
         ax.add_collection(line_collections)
 
     if types is not None:
         cmap = set_default(cmap, "echarts")
         cmapper, color_array = _color_array(colors, cmap, types_colors, types)
 
-        ax.scatter(x=x, y=y, c=color_array, s=markersize)
+        ax.scatter(x=x, y=y, c=color_array, s=markersize, **kwargs)
         if legend:
             _set_cat_legend(cmapper, ax, legend_kw)
     else:
         if values is not None:
             cmap = set_default(cmap, "OrRd")
-            values = normalize(values, vmin=vmin, vmax=vmax)
             if colors is not None:
                 vc_mapper = dict(zip(values, colors))
                 cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
-            ax.scatter(x=x, y=y, c=values, s=markersize, cmap=cmap)
+            mappable = ax.scatter(x=x, y=y, c=values, s=markersize,
+                                  cmap=cmap, **kwargs)
             if legend:
-                _set_cbar(values, cmap, ax, cbar_kw)
+                Colorbar(mappable=mappable, ax=ax)
         else:
-            ax.scatter(x=x, y=y, s=markersize)
+            ax.scatter(x=x, y=y, s=markersize, **kwargs)
 
     return ax
 
@@ -161,15 +157,16 @@ def point_map3d(
         types: List | np.ndarray = None,
         types_colors: Dict = None,
         values: List | np.ndarray = None,
+        colors: List | np.ndarray = None,
+        cmap=None,
+        norm=None,
         vmin: float = None,
         vmax: float = None,
-        colors: List | np.ndarray = None,
-        cmap: Any = None,
         legend: bool = True,
         legend_kw: Dict = None,
         cbar_kw: Dict = None,
         markersize: int = 5,
-        ax: mpl.axes.Axes = None,
+        ax: mpl.axes.Axes3D = None,
 ):
     """Point map in 3D
 
@@ -201,7 +198,8 @@ def point_map3d(
         ax = fig.add_subplot(projection='3d')
     else:
         if not isinstance(ax, Axes3D):
-            raise TypeError(f"If you want to use your own axes, initialize it as 3D")
+            raise TypeError(f"If you want to use your own axes, "
+                            f"initialize it as 3D")
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     ax.set_zticklabels([])
@@ -220,7 +218,6 @@ def point_map3d(
     else:
         if values is not None:
             cmap = set_default(cmap, "OrRd")
-            values = normalize(values, vmin, vmax)
             if colors is not None:
                 vc_mapper = dict(zip(values, colors))
                 cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
