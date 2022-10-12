@@ -1,0 +1,14 @@
+numpy
+pandas
+matplotlib
+seaborn
+legendkit>=0.2
+natsort
+networkx
+matplotlib-venn
+
+# doc
+sphinx
+furo
+sphinx-gallery
+numpydoc

@@ -19,13 +19,12 @@ classifiers = [
 python = ["^3.8"]
 matplotlib = "^3.5"
 pandas = "^1.5.0"
-legendkit = "^0.2.2"
+legendkit = "^0.2.4"
 networkx = { version="^2.8.6", optional=true }
 matplotlib-venn = { version="^0.11.7", optional=true }
-UpSetPlot = { version="^0.6", optional=true }
 
 [tool.poetry.extras]
-all = ["networkx", "matplotlib-venn", "UpSetPlot"]
+all = ["networkx", "matplotlib-venn"]
 
 [tool.poetry.group.dev.dependencies]
 jupyterlab = "^3.4.7"
