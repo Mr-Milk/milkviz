@@ -14,7 +14,8 @@ import milkviz as mv
 # Data input for upset plot
 # -------------------------------------
 
-# A list of any sequence, intersections between lists will be computed for you, duplicates will not considred
+# A list of any sequence, intersections between lists will
+# be computed for you, duplicates will not considred
 # 
 # Noted that this is the difference from input in venn diagram.
 #
@@ -27,5 +28,6 @@ domesticated = ['Dog', 'Chicken', 'Horse', 'Sheep', 'Pig', 'Cattle', 'Duck']
 # Create the upset plot
 # ----------------------------
 #
-mv.upset([mammals, herbivores, domesticated], names=['mammals', 'herbivores', 'domesticated'])
+mv.upset([mammals, herbivores, domesticated],
+         names=['mammals', 'herbivores', 'domesticated'])
 

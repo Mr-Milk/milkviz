@@ -45,8 +45,7 @@ release = '0.5.1'
 # ones.
 extensions = [
     'sphinx_gallery.gen_gallery',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
+    'numpydoc',
     'sphinx.ext.autosummary'
 ]
 

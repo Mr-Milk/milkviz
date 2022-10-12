@@ -8,12 +8,9 @@ API Reference
 
     anno_clustermap
     bubble
-    dot
     dot_heatmap
     graph
     point_map
-    point_map3d
     polygon_map
     stacked_bar
-    upset
     venn
