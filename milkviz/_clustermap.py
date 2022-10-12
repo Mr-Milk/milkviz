@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from typing import List, Optional, Dict, Any
-
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import cm
+from matplotlib.collections import QuadMesh
+from matplotlib.colors import to_hex
+from typing import List, Optional, Dict, Any
 
 from legendkit import CatLegend, Colorbar, vstack, hstack
-from milkviz.utils import color_mapper_cat, doc, set_default
+from milkviz.utils import set_default, cat_colors, get_colormap
 
 
-@doc
 def anno_clustermap(
         data: pd.DataFrame,
         # define row colors
@@ -36,30 +35,58 @@ def anno_clustermap(
         cbar_kw: Dict = None,
         categorical_cbar: Optional[List[str]] = None,
         cbar_title: str = None,
+        row_cluster=True,
+        col_cluster=True,
         **kwargs,
 ) -> sns.matrix.ClusterGrid:
     """Color or label annotated clustermap
 
-    Args:
-        data: [data], multi-levels annotations should store in MultiIndex
-        {row|col}_label: The index/columns level used for x-axis/y-axis label
-        {row|col}_colors: The index/columns level used to label in color stripe
-        row_colors_cmap: The colormap for row_colors, default: "tab20"
-        col_colors_cmap: The colormap for col_colors, default: "echarts", a custom colormap in milkviz
-        {row|col}_colors_order: A dict-like mapper to specific the order in each level,
-        {row|col}_colors_label: A dict-like mapper to overwrite the name of each level,
-        {row|col}_legend_split: Whether to split each level of colors stripe
-        {row|col}_legend_title: The title of row legend, when row_legend_split = False
-        legend_padding: The space between legend
-        legend_kw: Options to customize legend, will be applied to all,
-        cbar_kw: Options to customize colorbar, if categorical cbar, use legend_kw
-        heat_cmap: The colormap for heatmap, default: "RdBu_r"
-        categorical_cbar: Turn the colorbar in to categorical legend in text
-        cbar_title: Set the title for colorbar
-        **kwargs: Pass to `seaborn.clustermap <https://seaborn.pydata.org/generated/seaborn.clustermap.html#seaborn.clustermap>`_
+    Parameters
+    ----------
+    data : pd.DataFrame
+        A dataframe, multi-levels annotations should store in MultiIndex
+    row_label : str, array-like of str
+        The index level used for y-axis label
+    col_label : str, array-like of str
+        The columns level used for x-axis label
+    row_colors : str, array-like of str
+        The index levels used to label in color stripe
+    col_colors : str, array-like of str
+        The columns levels used to label in color stripe
+    row_colors_cmap : default: "tab20"
+        The colormap for row_colors
+    col_colors_cmap : default: "echarts"
+        The colormap for col_colors
+    row_colors_order : dict
+        Reorder the items in each level
+    col_colors_order : dict
+    row_colors_label : dict
+        Overwrite the name of each level,
+    col_colors_label : dict
+    row_legend_split : bool, default: True
+        Whether to split each level of colors stripe
+    col_legend_split : bool, default: True
+    row_legend_title : str
+        The title of row legend, when row_legend_split = False
+    col_legend_title : str
+        The title of col legend, when col_legend_split = False
+    legend_padding : float
+        The space between legend
+    legend_kw : dict
+        Options to customize legend, will be applied to all,
+    cbar_kw : dict
+        Options to customize colorbar, if categorical cbar, use legend_kw
+    heat_cmap : default: "RdBu_r"
+        The colormap for heatmap
+    categorical_cbar : array-like
+        Turn the colorbar in to categorical legend in text
+    cbar_title : str
+        Set the title for colorbar
+    row_cluster : bool
+    col_cluster : bool
+    kwargs :
+        Pass to :func:`seaborn.clustermap`
 
-    Returns:
-        A `seaborn.matrix.ClusterGrid` instance
 
     """
     row_colors_cmap = "tab20" if row_colors_cmap is None else row_colors_cmap
@@ -110,35 +137,33 @@ def anno_clustermap(
 
     if row_colors is not None:
         info = row_info[row_colors]
-        row_legend_contents = {rc: np.unique(info[rc].to_numpy().flatten()) for rc in row_colors}
-        row_colors_mapper = color_mapper_cat(info.to_numpy().flatten(), cmap=row_colors_cmap)
+        row_legend_contents = \
+            {rc: info[rc].unique().flatten() for rc in row_colors}
+        color_array, legend_labels, legend_colors = \
+            cat_colors(info.to_numpy().flatten(), cmap=row_colors_cmap)
+        # convert to hex to ensure str dtype
+        hex_colors = [to_hex(c) for c in legend_colors]
+        row_colors_mapper = dict(zip(legend_labels, hex_colors))
         clustermap_kwargs["row_colors"] = info.replace(row_colors_mapper)
 
     if col_colors is not None:
         info = col_info[col_colors]
-        col_legend_contents = {cc: np.unique(info[cc].to_numpy().flatten()) for cc in col_colors}
-        col_colors_mapper = color_mapper_cat(info.to_numpy().flatten(), cmap=col_colors_cmap)
+        col_legend_contents = \
+            {cc: info[cc].unique().flatten() for cc in col_colors}
+        color_array, legend_labels, legend_colors = \
+            cat_colors(info.to_numpy().flatten(), cmap=col_colors_cmap)
+        hex_colors = [to_hex(c) for c in legend_colors]
+        col_colors_mapper = dict(zip(legend_labels, hex_colors))
         clustermap_kwargs["col_colors"] = info.replace(col_colors_mapper)
 
-    g = sns.clustermap(plot_data, **clustermap_kwargs)
+    g = sns.clustermap(plot_data,
+                       col_cluster=col_cluster,
+                       row_cluster=row_cluster,
+                       **clustermap_kwargs)
 
     # plot row colors legend
-    legend_transform = dict(
-        bbox_to_anchor=(1.05, 1),
-        bbox_transform=g.ax_heatmap.transAxes,
-        loc="upper left",
-    )
-
-    cbar_transform = dict(
-        bbox_to_anchor=(1.05, 0),
-        ax=g.ax_heatmap,
-        bbox_transform=g.ax_heatmap.transAxes,
-        loc="lower left",
-    )
-
     legend_options = dict(
         handle="square",
-        title_align="left",
     )
     legend_options = {**legend_options, **legend_kw}
 
@@ -157,9 +182,14 @@ def anno_clustermap(
                 legend_list.append(leg)
             g.col_color_legend = hstack(legend_list, spacing=legend_padding)
         else:
-            title = col_colors[0] if col_legend_title is None else col_legend_title
+            title = col_colors[
+                0] if col_legend_title is None else col_legend_title
             labels, colors = zip(*col_colors_mapper.items())
-            g.col_color_legend = CatLegend(colors, labels, ax=g.ax_heatmap, title=title, **legend_options)
+            g.col_color_legend = CatLegend(ax=g.ax_heatmap,
+                                           colors=colors,
+                                           labels=labels,
+                                           title=title,
+                                           **legend_options)
         compose_legends.append(g.col_color_legend)
 
     if row_colors is not None:
@@ -175,30 +205,45 @@ def anno_clustermap(
                 legend_list.append(leg)
             g.row_color_legend = hstack(legend_list, spacing=legend_padding)
         else:
-            title = row_colors[0] if row_legend_title is None else row_legend_title
+            title = row_colors[
+                0] if row_legend_title is None else row_legend_title
             labels, colors = zip(*row_colors_mapper.items())
-            g.row_color_legend = CatLegend(colors, labels, title=title, title_align="left")
+            g.row_color_legend = CatLegend(ax=g.ax_heatmap,
+                                           colors=colors,
+                                           labels=labels,
+                                           title=title,
+                                           **legend_options)
         compose_legends.append(g.row_color_legend)
 
     if categorical_cbar is not None:
-        cmap = cm.get_cmap(heat_cmap)
+        cmap = get_colormap(heat_cmap)
         cmap_size = np.linspace(0, cmap.N, len(categorical_cbar), dtype=int)
         labels, colors = categorical_cbar, [cmap(i) for i in cmap_size]
-        g.cbar = CatLegend(colors, labels, title=cbar_title, **cbar_transform, **legend_options)
+        g.cbar = CatLegend(ax=g.ax_heatmap,
+                           colors=colors, labels=labels,
+                           title=cbar_title, **legend_options)
         compose_legends.append(g.cbar)
     else:
-        cdata = g.data2d.to_numpy()
-        cmin = np.nanmin(cdata)
-        cmax = np.nanmax(cdata)
         cbar_options = dict(
+            title=cbar_title,
             orientation="horizontal",
-            title_align="left",
+            loc="out lower right",
+            ticklocation="bottom",
         )
         cbar_options = {**cbar_options, **cbar_kw}
-        g.cbar = Colorbar(vmin=cmin, vmax=cmax, cmap=heat_cmap, title=cbar_title, **cbar_transform, **cbar_options)
 
-    g.compose_legends = vstack(compose_legends, padding=0, spacing=legend_padding, align="left", **legend_transform)
-    g.ax_heatmap.add_artist(g.compose_legends)
+        mesh = None
+        for i in g.ax_heatmap.get_children():
+            if isinstance(i, QuadMesh):
+                mesh = i
+        g.cbar = Colorbar(mesh, **cbar_options)
+
+    g.compose_legends = vstack(compose_legends, padding=0,
+                               ax=g.ax_heatmap,
+                               spacing=legend_padding, align="left",
+                               loc="out right upper"
+                               )
+    g.ax_heatmap.legend_ = g.compose_legends
 
     # close labels and ticks on y-axis
     if row_label is None:
@@ -211,5 +256,10 @@ def anno_clustermap(
         g.ax_heatmap.set_xticklabels("")
         g.ax_heatmap.set_xlabel("")
         g.ax_heatmap.set_xticks([])
+
+    if not row_cluster:
+        g.ax_row_dendrogram.remove()
+    if not col_cluster:
+        g.ax_col_dendrogram.remove()
 
     return g

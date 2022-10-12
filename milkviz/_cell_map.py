@@ -1,272 +1,247 @@
-from __future__ import annotations
-
-from typing import List, Tuple, Any, Dict
-
 import matplotlib as mpl
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.collections import PatchCollection, LineCollection
+from matplotlib.colors import is_color_like, Normalize, TwoSlopeNorm
 from mpl_toolkits.mplot3d import Axes3D
 
-from legendkit import CatLegend, Colorbar
-from milkviz.utils import set_ticks, set_spines, \
-    color_mapper_cat, rotate_points, color_mapper_val, doc, create_cmap, normalize, \
-    set_default
+from legendkit import Colorbar
+from .utils import rotate_points, set_default, cat_colors, set_cat_legend
 
 
-def _init_canvas(ax):
-    """For map function only, clear all axis"""
-    set_ticks(ax)
-    ax.set_aspect("equal")
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-
-
-def _color_array(c_array, cmap, cmapper, types):
-    color_array = None if cmapper is None else [cmapper[t] for t in types]
-    if cmapper is None:
-        if c_array is not None:
-            cmapper = color_mapper_cat(types, c_array=c_array)
-        else:
-            cmapper = color_mapper_cat(types, cmap=cmap)
-        color_array = [cmapper[t] for t in types]
-
-    return cmapper, color_array
-
-
-def _set_cat_legend(cmapper, ax, legend_kw):
-    labels, colors = zip(*cmapper.items())
-    legend_options = dict(
-        handle="circle",
-        loc="out right center",
-    )
-    legend_options = {**legend_options, **legend_kw}
-    CatLegend(colors, labels, ax=ax, **legend_options)
-
-
-def _set_cbar(values, cmap, ax, cbar_kw):
-    cmin = np.nanmin(values)
-    cmax = np.nanmax(values)
+def _set_cbar(mappable, ax, cbar_kw):
     cbar_options = dict(
         loc="out right center",
     )
     cbar_options = {**cbar_options, **cbar_kw}
-    Colorbar(vmin=cmin, vmax=cmax, cmap=cmap, ax=ax, **cbar_options)
+    cb = Colorbar(mappable=mappable, ax=ax, **cbar_options)
+    cb.ax.tick_params(left=True, right=True)
 
 
-@doc
+def handle_cmap_norm(cmap, norm, values, vmin, vmax, center):
+    cmap = set_default(cmap, "OrRd")
+    vmin = np.nanmin(values) if vmin is None else vmin
+    vmax = np.nanmax(values) if vmax is None else vmax
+    if center is not None:
+        norm = TwoSlopeNorm(center, vmin=vmin, vmax=vmax)
+    else:
+        if norm is None:
+            norm = Normalize(vmin=vmin, vmax=vmax)
+    return cmap, norm
+
+
 def point_map(
-        x,
-        y,
-        types: List | np.ndarray = None,
-        types_colors: Dict = None,
-        values: List | np.ndarray = None,
-        links: List | np.ndarray = None,
-        colors: List = None,
+        points,
+        *,
+        types=None,
+        order=None,
+        values=None,
+        links=None,
+        colors=None,
         cmap=None,
         norm=None,
         vmin=None,
         vmax=None,
-        rotate: int = None,
-        markersize: int = 5,
-        linecolor: Any = "#cccccc",
-        linewidth: int = 1,
-        no_spines: bool = True,
-        legend: bool = True,
-        legend_kw: Dict = None,
-        cbar_kw: Dict = None,
-        ax: mpl.axes.Axes = None,
+        center=None,
+        rotate=None,
+        markersize=5,
+        edgecolor=None,
+        edgewidth=None,
+        linkcolor="#cccccc",
+        linkwidth=1,
+        frameon=False,
+        legend=True,
+        legend_kw=None,
+        cbar_kw=None,
+        ax=None,
         **kwargs,
 ):
     """Point map
 
-    Args:
-        x: The x-coord array
-        y: The y-coord array
-        types: [types] of points
-        types_colors: A dictionary that tells color for every type, key is the type and value is the color
-        values: [values] of points
-        links: The links between points, should be a list of (point_index_1, point_index_2)
-        colors: [hue]
-        cmap: [cmap]
-        rotate: The degree to rotate the whole plot according to origin
-        markersize: The size of marker
-        linecolor: The color of lines
-        linewidth: The width of lines
-        no_spines: [no_spines]
-        legend: [legend]
-        legend_kw: [legend_kw]
-        cbar_kw: [cbar_kw]
-        ax: [ax]
-        kwargs: Pass to `Axes.scatter`
+    Parameters
+    ----------
+    points : array-like
+        2D or 3D points
+    types : array-like
+        The categorical label for each point
+    order : array-like
+        The order of types that presents in legends
+    values : array-like
+        The numeric value for each point
+    links : array-like of (point_index1, point_index2)
+        The links between points
+    colors : array, mapping
+        Either array that represents colors or a dict that map types to colors
+    cmap :
+    norm :
+    vmin :
+    vmax :
+    center :
+    rotate : float
+        The degree to rotate the whole plot according to origin,
+        only rotate x and y
+    markersize : float
+        The size of marker
+    edgecolor : color
+    edgewidth : float
+    linkcolor :
+        The color of lines
+    linkwidth :
+        The width of lines
+    frameon : bool
+        If True, will turn off the frame of the plot
+    legend : bool
+        Whether to show the legend
+    legend_kw : dict
+        Pass to :func:`legendkit.legend`
+    cbar_kw : dict
+        Pass to :func:`legend.colorbar`
+    ax : Axes
+    kwargs :
+        Pass to :func:`matplotlib.axes.Axes.scatter`
 
-    Returns:
-        [return_obj]
+    Returns
+    -------
+    Axes
 
     """
-    if ax is None:
+    size, dim = np.asarray(points).shape
+    x = points[:, 0]
+    y = points[:, 1]
+    z = None
+    if dim == 3:
+        z = points[:, 2]
+        if ax is None:
+            fig = plt.gcf()
+            ax = fig.add_subplot(projection='3d')
+        else:
+            if not isinstance(ax, Axes3D):
+                raise TypeError(f"If you want to use your own axes, "
+                                f"initialize it as 3D")
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.set_zticklabels([])
+        ax.set_xlabel("X", labelpad=-14)
+        ax.set_ylabel("Y", labelpad=-14)
+        ax.set_zlabel("Z", labelpad=-14)
+    else:
         ax = plt.gca()
-    if no_spines:
-        set_spines(ax)
+        ax.set_aspect("equal")
+        if frameon:
+            ax.tick_params(top=False, bottom=False, left=False, right=False,
+                           labeltop=False, labelbottom=False,
+                           labelleft=False, labelright=False)
+        else:
+            ax.set_axis_off()
+
     legend_kw = set_default(legend_kw, {})
     cbar_kw = set_default(cbar_kw, {})
-
-    _init_canvas(ax)
 
     if rotate is not None:
         x, y = rotate_points(x, y, (0, 0), rotate)
 
-    if links is not None:
-        if not isinstance(linecolor, str):
-            if len(linecolor) != len(links):
+    points = (x, y) if dim == 2 else (x, y, z)
+
+    if (links is not None) & (dim == 2):
+        if not is_color_like(linkcolor):
+            if len(linkcolor) != len(links):
                 raise ValueError("Length of linecolor must match to links")
-        lines = np.array([[[x[i1], y[i1]], [x[i2], y[i2]]] for i1, i2 in links])
-        line_collections = LineCollection(lines, linewidths=linewidth,
-                                          edgecolors=linecolor, zorder=-100)
+        lines = np.array([[[x[i1], y[i1]],
+                           [x[i2], y[i2]]] for i1, i2 in links])
+        line_collections = LineCollection(lines, linewidths=linkwidth,
+                                          edgecolors=linkcolor, zorder=-100)
         ax.add_collection(line_collections)
 
     if types is not None:
-        cmap = set_default(cmap, "echarts")
-        cmapper, color_array = _color_array(colors, cmap, types_colors, types)
-
-        ax.scatter(x=x, y=y, c=color_array, s=markersize, **kwargs)
+        color_array, legend_labels, legend_colors = \
+            cat_colors(types, order, cmap, colors)
+        ax.scatter(*points, s=markersize, c=color_array,
+                   linewidths=edgewidth,
+                   edgecolors=edgecolor,
+                   **kwargs)
         if legend:
-            _set_cat_legend(cmapper, ax, legend_kw)
+            set_cat_legend(legend_labels, legend_colors, ax,
+                           edgecolor=edgecolor,
+                           edgewidth=edgewidth,
+                           legend_kw=legend_kw)
     else:
         if values is not None:
-            cmap = set_default(cmap, "OrRd")
-            if colors is not None:
-                vc_mapper = dict(zip(values, colors))
-                cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
-            mappable = ax.scatter(x=x, y=y, c=values, s=markersize,
-                                  cmap=cmap, **kwargs)
+            cmap, norm = handle_cmap_norm(cmap, norm, values,
+                                          vmin, vmax, center)
+            mappable = ax.scatter(*points, c=values, s=markersize,
+                                  norm=norm, cmap=cmap,
+                                  linewidths=edgewidth,
+                                  edgecolors=edgecolor,
+                                  **kwargs)
             if legend:
-                Colorbar(mappable=mappable, ax=ax)
+                _set_cbar(mappable, ax, cbar_kw)
         else:
-            ax.scatter(x=x, y=y, s=markersize, **kwargs)
-
+            ax.scatter(*points, s=markersize, **kwargs)
     return ax
 
 
-@doc
-def point_map3d(
-        x,
-        y,
-        z,
-        types: List | np.ndarray = None,
-        types_colors: Dict = None,
-        values: List | np.ndarray = None,
-        colors: List | np.ndarray = None,
+def polygon_map(
+        polygons,
+        *,
+        types=None,
+        order=None,
+        values=None,
+        colors=None,
         cmap=None,
         norm=None,
-        vmin: float = None,
-        vmax: float = None,
-        legend: bool = True,
-        legend_kw: Dict = None,
-        cbar_kw: Dict = None,
-        markersize: int = 5,
-        ax: mpl.axes.Axes3D = None,
-):
-    """Point map in 3D
-
-        Args:
-            x: The x-coord array
-            y: The y-coord array
-            z: The z-coord array
-            types: [types] of points
-            types_colors: A dictionary that tells color for every type, key is the type and value is the color
-            values: [values] of points
-            vmin, vmax: [vminmax]
-            colors: [hue]
-            cmap: [cmap]
-            legend: [legend]
-            legend_kw: [legend_kw]
-            cbar_kw: [cbar_kw]
-            markersize: The size of marker
-            ax: [ax]
-
-        Returns:
-            [return_obj]
-
-        """
-    legend_kw = set_default(legend_kw, {})
-    cbar_kw = set_default(cbar_kw, {})
-
-    if ax is None:
-        fig = plt.gcf()
-        ax = fig.add_subplot(projection='3d')
-    else:
-        if not isinstance(ax, Axes3D):
-            raise TypeError(f"If you want to use your own axes, "
-                            f"initialize it as 3D")
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.set_zticklabels([])
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-
-    if types is not None:
-        cmap = set_default(cmap, "tab20")
-        cmapper, color_array = _color_array(colors, cmap, types_colors, types)
-
-        ax.scatter(x, y, z, c=color_array, s=markersize)
-        if legend:
-            # bbox: 1.2, -0.1
-            _set_cat_legend(cmapper, ax, legend_kw)
-    else:
-        if values is not None:
-            cmap = set_default(cmap, "OrRd")
-            if colors is not None:
-                vc_mapper = dict(zip(values, colors))
-                cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
-            ax.scatter(x, y, z, c=values, s=markersize, cmap=cmap)
-            if legend:
-                # pos: 1.2, 0.05
-                _set_cbar(values, cmap, ax, cbar_kw)
-        else:
-            ax.scatter(x, y, z, s=markersize)
-
-    return ax
-
-
-@doc
-def polygon_map(
-        polygons: List[List[Tuple[float, float]]],
-        types: List | np.ndarray = None,
-        types_colors: Dict = None,
-        values: List | np.ndarray = None,
-        vmin: float = None,
-        vmax: float = None,
-        colors: List = None,
-        cmap: Any = None,
-        legend: bool = True,
-        legend_kw: Dict = None,
-        cbar_kw: Dict = None,
-        rotate: int = None,
-        no_spines: bool = True,
+        vmin=None,
+        vmax=None,
+        center=None,
+        rotate=None,
+        edgecolor=None,
+        edgewidth=None,
+        frameon=False,
+        legend=True,
+        legend_kw=None,
+        cbar_kw=None,
         ax: mpl.axes.Axes = None,
+        **kwargs,
 ):
     """Polygon map
 
-    Args:
-        polygons: A list of polygons, a polygon is represented by a list of points
-        types: [types] of polygons
-        types_colors: A dictionary that tells color for every type, key is the type and value is the color
-        values: [values] of polygons
-        vmin, vmax: [vminmax]
-        colors: [hue]
-        cmap: [cmap]
-        legend: [legend]
-        legend_kw: [legend_kw]
-        cbar_kw: [cbar_kw]
-        rotate: The degree to rotate the whole plot according to origin
-        no_spines: [no_spines]
-        ax: [ax]
+    Parameters
+    ----------
+    polygons : array-like
+        A list of polygons, a polygon is represented by a list of points
+    types :
+        The categorical label for each polygon
+    order : array-like
+        The order of types that presents in legends
+    values : array-like
+        The numeric value for each polygon
+    colors : array, mapping
+        Either array that represents colors or a dict that map types to colors
+    cmap :
+    norm :
+    vmin :
+    vmax :
+    center :
+    rotate : float
+        The degree to rotate the whole plot according to origin
+    edgecolor : color
+    edgewidth : float
+    frameon : bool
+        If True, will turn off the frame of the plot
+    legend : bool
+        Whether to show the legend
+    legend_kw : dict
+        Pass to :func:`legendkit.legend`
+    cbar_kw : dict
+        Pass to :func:`legend.colorbar`
+    ax : Axes
+    kwargs :
+        Pass to :func:`matplotlib.axes.Axes.scatter`
 
-    Returns:
-        [return_obj]
+    Returns
+    -------
+    Axes
 
     """
     polygons = [np.array(polygon) for polygon in polygons]
@@ -285,38 +260,49 @@ def polygon_map(
 
     if ax is None:
         ax = plt.gca()
-    if no_spines:
-        set_spines(ax)
-
-    _init_canvas(ax)
+        ax.set_aspect('equal')
+    if frameon:
+        ax.tick_params(top=False, bottom=False, left=False, right=False,
+                       labeltop=False, labelbottom=False,
+                       labelleft=False, labelright=False)
+    else:
+        ax.set_axis_off()
 
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
+    patches = [mpatches.Polygon(polygon) for polygon in polygons]
+
     if types is not None:
         cmap = set_default(cmap, "echarts")
-        cmapper, color_array = _color_array(colors, cmap, types_colors, types)
-        patches = [mpatches.Polygon(polygon) for polygon in polygons]
-        patches_collections = PatchCollection(patches, facecolors=[cmapper[t] for t in types])
-        ax.add_collection(patches_collections)
+        color_array, legend_labels, legend_colors = \
+            cat_colors(types, order, cmap, colors)
+
+        patches_collections = PatchCollection(
+            patches,
+            facecolors=color_array,
+            linewidths=edgewidth,
+            edgecolors=edgecolor,
+            **kwargs,
+        )
         if legend:
-            _set_cat_legend(cmapper, ax, legend_kw)
+            set_cat_legend(legend_labels, legend_colors, ax,
+                           shape="square",
+                           edgecolor=edgecolor,
+                           edgewidth=edgewidth,
+                           legend_kw=legend_kw)
     else:
         if values is not None:
-            cmap = set_default(cmap, "OrRd")
-            values = normalize(values, vmin, vmax)
-            if colors is not None:
-                vc_mapper = dict(zip(values, colors))
-                cmap = create_cmap([vc_mapper[v] for v in sorted(values)])
-            colors = color_mapper_val(values, cmap=cmap)
-            patches = [mpatches.Polygon(polygon, color=c) for polygon, c in zip(polygons, colors)]
-            patches_collections = PatchCollection(patches, facecolors=colors, cmap=cmap)
-            ax.add_collection(patches_collections)
+            cmap, norm = handle_cmap_norm(cmap, norm, values,
+                                          vmin, vmax, center)
+            patches_collections = PatchCollection(
+                patches, cmap=cmap, norm=norm, linewidths=edgewidth,
+                edgecolors=edgecolor, **kwargs)
+            patches_collections.set_array(values)
             if legend:
-                _set_cbar(values, cmap, ax, cbar_kw)
+                _set_cbar(patches_collections, ax, cbar_kw)
         else:
-            patches = [mpatches.Polygon(polygon) for polygon in polygons]
             patches_collections = PatchCollection(patches)
-            ax.add_collection(patches_collections)
+    ax.add_collection(patches_collections)
 
     return ax

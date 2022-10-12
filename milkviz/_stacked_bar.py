@@ -1,68 +1,80 @@
 from __future__ import annotations
 
-from itertools import cycle
-from typing import Union, List, Dict, Callable
-
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+from itertools import tee
 from matplotlib.axes import Axes
-from matplotlib.colors import Colormap
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
+from natsort import natsorted
+from typing import Callable
 
-from legendkit import CatLegend
-from milkviz.utils import doc, set_default
-from milkviz.utils import get_cmap_colors, set_spines
-
-
-def fold_add(arr):
-    new_arr = np.zeros(arr.size)
-    new_arr[0] = arr[0]
-    for i in range(arr.size - 1):
-        new_arr[i + 1] = arr[:i + 2].sum()
-    return new_arr.astype(arr.dtype)  # preserve the data type
+from .utils import set_default, cat_colors, set_cat_legend
 
 
-@doc
-def stacked_bar(data: pd.DataFrame = None,
-                x: str | List | np.ndarray = None,
-                y: str | List | np.ndarray = None,
-                stacked: Union[str, np.ndarray, None] = None,
-                orient: str = "v",
-                percentage: bool = False,
-                cmap: Union[str, Colormap, None] = None,
-                show_values: bool | Callable = False,
-                legend_kw: Dict = None,
-                ax: mpl.axes.Axes = None,
-                **kwargs,
+def stacked_bar(data,
+                group=None,
+                value=None,
+                stacked=None,
+                *,
+                orient="v",
+                group_order=None,
+                stacked_order=None,
+                percentage=False,
+                barwidth=.8,
+                cmap=None,
+                colors=None,
+                show_values=False,
+                props=None,
+                legend_kw=None,
+                ax=None,
                 ) -> Axes:
     """Stacked bar plot
 
-    Args:
-        data: [data]
-        x: [x]
-        y: [y]
-        stacked: Which columns to plot as stacked type
-        orient: "v" or "h"
-        percentage: Normalize value to 1
-        cmap: [cmap], default: "echarts", a custom milkviz palette
-        show_values: Whether to display values of each block,
-            or you can pass in a function to tell when to display
-            like `lambda x: x > 100` will only display when value exceed 100
-        legend_kw: The options to configure legend
-        ax: [ax]
-        **kwargs: Pass to `seaborn.barplot <https://seaborn.pydata.org/generated/seaborn.barplot.html#seaborn.barplot>`_
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The data used to plot
+    group : str
+        The column used to group
+    value : str
+        The column that contains numeric values for plotting
+    stacked : str
+        The column to plot as stack
+    orient : "v" or "h"
+        The orientation of the plot
+    group_order :
+    stacked_order :
+    percentage : bool
+        Normalize stack to 1, ensure all stacks have same height
+    cmap :
+    colors : array, mapping
+        Either array that represents colors or a dict that map types to colors
+    barwidth : float
+        The width of stacked bar, should be in (0, 1)
+    show_values : bool
+        Whether to display values of each block,
+        or you can pass in a function to tell when to display
+        like `lambda x: x > 100` will only display when value exceed 100
+    props : dict
+        Use to style text, pass to :func:`matplotlib.axes.Axes.text`
+    legend_kw : dict
+        The options to configure legend
+    ax :
 
-    Returns:
-        [return_obj]
+    Returns
+    -------
+    Axes
 
     """
 
-    cmap = "echarts" if cmap is None else cmap
+    cmap = set_default(cmap, "echarts")
     legend_kw = set_default(legend_kw, {})
+    props = set_default(props, {})
 
-    show_values_func = lambda a: a
+    def show_values_func(va):
+        return va
     if isinstance(show_values, Callable):
         show_values_func = show_values
         show_values = True
@@ -70,66 +82,80 @@ def stacked_bar(data: pd.DataFrame = None,
     if ax is None:
         ax = plt.gca()
 
-    if data is None:
-        data = pd.DataFrame({"x": x, "y": y, "stacked": stacked})
-        x = "x"
-        y = "y"
-        stacked = "stacked"
-    # This reverse step is to make the label column in the right order
-    data = data.iloc[::-1, :]
-    value_key, label_key = (y, x) if orient == "v" else (x, y)
-    text_key = "display"
-    stacked_order = data[stacked].unique()
-    label_order = data[label_key].unique()
+    if stacked_order is None:
+        stacked_order = natsorted(data[stacked].unique())
+    if group_order is None:
+        group_order = natsorted(data[group].unique())
 
-    all_g = []
-    for label in label_order:
-        g = data[data[label_key] == label].set_index(stacked)
-        s_order = []
-        for i in stacked_order:
-            if i in g.index:
-                s_order.append(i)
-        g = g.loc[s_order, :]
-        v = g[value_key].to_numpy()
-        g[text_key] = v
+    _, legend_labels, legend_colors = \
+        cat_colors(stacked_order, stacked_order, cmap, colors)
+
+    start_x = 1
+    gb = data.groupby([group], sort=False)
+    rects = []
+    lims = []
+
+    textprops = dict(ha="center", va="center",
+                     bbox=dict(fc="white", alpha=0.7))
+    textprops = {**textprops, **props}
+
+    mapping = {key: i for i, key in enumerate(stacked_order[::-1])}
+
+    for s in group_order:
+        df = gb.get_group(s).set_index(stacked)
+        slice_ix = sorted(df.index, key=lambda d: mapping[d])
+        df = df.loc[slice_ix]
+        text = df[value].to_numpy()
+        v_sum = np.sum(text)
+        vs = np.cumsum(text)
         if percentage:
-            v = v / v.sum()
-        g[value_key] = fold_add(v)
-        all_g.append(g)
-    data_g = pd.concat(all_g).reset_index()
+            vs = vs / v_sum
+        lims.append(np.max(vs))
+        x = start_x - barwidth / 2
+        for v, c, t in zip(vs[::-1], legend_colors, text[::-1]):
+            if orient == "v":
+                rects.append(
+                    Rectangle(xy=(x, 0), width=barwidth, height=v,
+                              facecolor=c)
+                )
+                if show_values:
+                    ax.text(start_x, v, t, **textprops)
+            else:
+                rects.append(
+                    Rectangle(xy=(0, x), height=barwidth, width=v,
+                              facecolor=c)
+                )
+                if show_values:
+                    ax.text(v, start_x, t, rotation=-90, **textprops)
 
-    colors = get_cmap_colors(cmap)
-    # This reverse step is to make the stacked column in the right order
-    leg_colors, leg_labels = [], []
-    for (n, g), c in zip(data_g.iloc[::-1, :].groupby(stacked, sort=False),
-                         cycle(colors)):
-        bar = sns.barplot(x=x, y=y, data=g, ax=ax, color=c, orient=orient,
-                          ci=None, **kwargs)
-        if show_values:
-            for i in range(len(g)):
-                loc = g.iloc[i, :][value_key]
-                text = g.iloc[i, :][text_key]
-                if show_values_func(float(text)):
-                    if orient == "v":
-                        bar.text(i, loc, text, ha="center", va="center",
-                                 bbox=dict(fc="white", alpha=0.7))
-                    else:
-                        bar.text(loc, i, text, ha="center", va="center",
-                                 rotation=-90,
-                                 bbox=dict(fc="white", alpha=0.7))
-        leg_colors.append(c)
-        leg_labels.append(n)
+        start_x += 1
+    patches = PatchCollection(rects, match_original=True)
+    ax.add_collection(patches)
 
-    legend_kw = set_default(legend_kw, {})
-    legend_options = dict(
-        handle="square",
-        title_align="left",
-        bbox_to_anchor=(1.05, 0.5),
-        bbox_transform=ax.transAxes,
-        loc="center left",
-        title=stacked if isinstance(stacked, str) else None,
+    value_label = "Percentage (%)" if percentage else value
+    if orient == "v":
+        ax.set_xlim(0.5, len(group_order) + 0.5)
+        ax.set_ylim(0, np.max(lims) * 1.05)
+        ax.xaxis.set_ticks(
+            ticks=np.arange(1, len(group_order)+1),
+            labels=group_order,
+        )
+        ax.set(xlabel=group, ylabel=value_label)
+    else:
+        ax.set_ylim(0.5, len(group_order) + 0.5)
+        ax.set_xlim(0, np.max(lims) * 1.05)
+        ax.yaxis.set_ticks(
+            ticks=np.arange(1, len(group_order) + 1),
+            labels=group_order,
+        )
+        ax.set(xlabel=value_label, ylabel=group)
+
+    set_cat_legend(
+        labels=legend_labels,
+        colors=legend_colors,
+        ax=ax,
+        title=stacked,
+        shape="square",
+        legend_kw=legend_kw,
     )
-    legend_options = {**legend_options, **legend_kw}
-    CatLegend(leg_colors, leg_labels, ax=ax, **legend_options)
-    set_spines(ax, (1, 0, 1, 0))
     return ax

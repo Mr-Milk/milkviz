@@ -1,50 +1,49 @@
-from __future__ import annotations
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from matplotlib.colors import Normalize
-from typing import List, Tuple, Any, Dict
 
 from legendkit import SizeLegend, Colorbar
-from milkviz.utils import norm_arr, doc, set_default, set_spines
+from milkviz.utils import set_default
 
 
-@doc
-def bubble(data: pd.DataFrame = None,
-           x: str | List | np.ndarray = None,
-           y: str | List | np.ndarray = None,
-           hue: str | List | np.ndarray = None,
-           size: str | List | np.ndarray = None,
+def bubble(data=None,
+           x=None,
+           y=None,
+           hue=None,
+           size=None,
            cmap=None,
            norm=None,
            vmin=None,
            vmax=None,
-           sizes: Tuple[int, int] = (10, 250),
+           sizes=(10, 250),
+           size_norm=None,
            dtype=None,
-           legend_kw: Dict = None,
-           cbar_kw: Dict = None,
-           ax: mpl.axes.Axes = None,
+           legend_kw=None,
+           cbar_kw=None,
+           ax=None,
            **kwargs,
            ) -> mpl.axes.Axes:
     """Bubble plot
 
-    Args:
-        data: [data]
-        x: [x]
-        y: [y]
-        hue: [hue]
-        size: [size]
-        cmap: [cmap], default to "RdBu"
-        sizes: [sizes]
-        dtype: [dtype]
-        legend_kw: The options to configure legend
-        cbar_kw: The options to configure colorbar
-        ax: [ax]
-
-    Returns:
-        [return_obj]
+    Parameters
+    ----------
+    data :
+    x :
+    y :
+    hue :
+    size :
+    cmap : default to "RdBu"
+    norm :
+    vmin :
+    vmax :
+    sizes :
+    size_norm :
+    dtype:
+    legend_kw : dict
+        The options to configure legend
+    cbar_kw : dict
+        The options to configure colorbar
+    ax :
 
     """
     ax = set_default(ax, plt.gca())
@@ -60,7 +59,10 @@ def bubble(data: pd.DataFrame = None,
     if size is None:
         raise ValueError("At least `size` must be provided")
 
-    circ_size = norm_arr(size, sizes)
+    if size_norm is None:
+        size_norm = Normalize()
+        size_norm.autoscale(size)
+    circ_size = size_norm(size) * (sizes[1] - sizes[0]) + sizes[0]
     bubbles = ax.scatter(x, y,
                          s=circ_size,
                          c=hue,
@@ -83,6 +85,5 @@ def bubble(data: pd.DataFrame = None,
         )
         cbar_options = {**cbar_options, **cbar_kw}
         Colorbar(bubbles, ax=ax, **cbar_options)
-    set_spines(ax, (1, 0, 1, 0))
 
     return ax
