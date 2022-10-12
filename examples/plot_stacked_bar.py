@@ -31,11 +31,13 @@ data
 # Create the stacked_bar
 # ----------------------------
 #
-mv.stacked_bar(data, x="storage", y="sales", stacked="product", show_values=True)
+mv.stacked_bar(data, group="storage", value="sales", stacked="product",
+               show_values=True)
 
 
 # %%
 # Normalize the data to 1
 # ----------------------------
 #
-mv.stacked_bar(data, x="storage", y="sales", stacked="product", percentage=True)
+mv.stacked_bar(data, group="storage", value="sales", stacked="product",
+               percentage=True)

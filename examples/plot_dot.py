@@ -24,5 +24,6 @@ labels = ["apple", "banana", "Coconut", "Plum", "Kiwifruit",
 # Create the dot heatmap
 # ----------------------------
 #
-mv.dot(sizes, colors, yticklabels=labels, legend_kw={"title": "Size"})
+mv.dot_heatmap(sizes, colors, yticklabels=labels,
+               dot_size_legend_kw={"title": "Size"})
 

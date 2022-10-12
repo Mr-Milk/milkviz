@@ -26,6 +26,6 @@ labels = ["apple", "banana", "Coconut", "Plum", "Kiwifruit",
 #
 mv.dot_heatmap(sizes, colors, xticklabels=labels,
                dot_size_legend_kw={"title": "Dot Size"},
-               dot_hue_cbar_kw={"title": "Dot Color"},
+               dot_hue_cbar_kw={"title": "Dot Color", "alignment": "left"},
                )
 

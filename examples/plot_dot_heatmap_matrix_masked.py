@@ -7,7 +7,6 @@ Here shows how to draw a triangle dot heatmap and dot heatmap + matrix heatmap
 """
 import numpy as np
 import milkviz as mv
-from milkviz import mask_triu
 
 # %%
 # First let's create some random data
@@ -26,9 +25,11 @@ labels = ["Apple", "Avocado", "Banana", "Blueberries",
 # ----------------------------------------
 # You can replace all unwanted values into `NaN`
 #
-sizes = mask_triu(sizes)
-matrix = mask_triu(matrix)
-mv.dot_heatmap(sizes, colors, matrix, xticklabels=labels, dot_patch="pie",
+sizes = np.ma.masked_values(np.tril(sizes), 0)
+colors = np.ma.masked_values(np.tril(colors), 0)
+matrix = np.ma.masked_values(np.tril(matrix), 0)
+mv.dot_heatmap(sizes, colors, matrix,
+               xticklabels=labels, dot_patch="pie",
                dot_hue_cbar_kw={"title": "Dot Color"},
                matrix_cbar_kw={"title": "Matrix Color"}
                )

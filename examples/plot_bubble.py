@@ -23,5 +23,6 @@ color = np.random.randint(3, 10, 10)
 # Create the dot heatmap
 # ----------------------------
 #
-mv.bubble(x=x, y=y, size=size, hue=color, legend_kw={"title": "Size"}, cbar_kw={"title": "Value"})
+mv.bubble(x=x, y=y, size=size, hue=color,
+          legend_kw={"title": "Size"}, cbar_kw={"title": "Value"})
 
