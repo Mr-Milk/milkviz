@@ -2,7 +2,7 @@ numpy
 pandas
 matplotlib
 seaborn
-legendkit>=0.2
+legendkit==0.2.5
 natsort
 networkx
 matplotlib-venn
