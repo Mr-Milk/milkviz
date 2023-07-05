@@ -27,7 +27,7 @@ matplotlib-venn = { version="^0.11.7", optional=true }
 all = ["networkx", "matplotlib-venn"]
 
 [tool.poetry.group.dev.dependencies]
-jupyterlab = "^3.4.7"
+jupyterlab = "^4.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
